@@ -229,15 +229,15 @@ class BrushstrokeOptimizer:
         # resize images to save memory
         rendered_canvas_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.I),
-                                             size=(int(self.canvas_height // 2), int(self.canvas_width // 2)))
+                                             size=(int(self.canvas_height), int(self.canvas_width)))
 
         content_img_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.content_img),
-                                             size=(int(self.canvas_height // 2), int(self.canvas_width // 2)))
+                                             size=(int(self.canvas_height), int(self.canvas_width)))
 
         style_img_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.style_img),
-                                             size=(int(self.canvas_height // 2), int(self.canvas_width // 2)))
+                                             size=(int(self.canvas_height), int(self.canvas_width)))
 
         self.loss_dict = {}
         self.loss_dict['content'] = ops.content_loss(self.vgg.extract_features(rendered_canvas_resized),
@@ -248,11 +248,11 @@ class BrushstrokeOptimizer:
                                                      scale_by_y=True)
         self.loss_dict['content'] *= self.content_weight
 
-        self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
-                                                 self.vgg.extract_features(style_img_resized),
-                                                 layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
-                                                 weights=[1, 1, 1, 1, 1])
-        self.loss_dict['style'] *= self.style_weight
+        #self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
+        #                                         self.vgg.extract_features(style_img_resized),
+        #                                         layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
+        #                                         weights=[1, 1, 1, 1, 1])
+        #self.loss_dict['style'] *= self.style_weight
 
         self.loss_dict['curviture'] = ops.curviture_loss(self.curve_s, self.curve_e, self.curve_c)
         self.loss_dict['curviture'] *= self.curviture_weight
