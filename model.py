@@ -280,10 +280,10 @@ class BrushstrokeOptimizer:
             loss=loss, 
             var_list=[self.location, self.curve_s, self.curve_e, self.curve_c, self.width])
         step_ops.append(optim_step)
-        optim_step_color = tf.train.AdamOptimizer(0.01).minimize(
-            loss=self.loss_dict['style'],
-            var_list=self.color)
-        step_ops.append(optim_step_color)
+        #optim_step_color = tf.train.AdamOptimizer(0.01).minimize(
+        #    loss=self.loss_dict['style'],
+        #    var_list=self.color)
+        #step_ops.append(optim_step_color)
 
         # constraint parameters to certain range
         with tf.control_dependencies(step_ops.copy()):
