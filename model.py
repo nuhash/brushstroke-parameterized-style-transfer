@@ -168,7 +168,7 @@ class BrushstrokeOptimizer:
                              options=config_pb2.RunOptions(report_tensor_allocations_upon_oom=True)
                             )
 
-                steps.set_description(f'content_loss: {loss_dict_["content"]:.6f}, style_loss: {loss_dict_["style"]:.6f}')
+                steps.set_description(f'content_loss: {loss_dict_["content"]:.6f}')
                 #s = ''
                 #for key in loss_dict_:
                 #    loss = loss_dict_[key]
