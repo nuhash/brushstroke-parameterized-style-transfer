@@ -159,6 +159,8 @@ def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gra
         canvas = tf.zeros(shape=I_colors.shape, dtype=dtype)
     elif canvas_color == 'noise':
         canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
+    else:
+        canvas = tf.constant(name='canvas_bg', value=canvas_color, dtype=dtype)
 
     I = I_colors * bs_mask + (1 - bs_mask) * canvas
     return I
