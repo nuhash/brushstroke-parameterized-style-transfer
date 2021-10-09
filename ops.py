@@ -151,14 +151,15 @@ def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gra
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
     bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
     bs_mask = tf.math.sigmoid(bs - tf.expand_dims(D, axis=-1))
-    if canvas_color == 'gray':
-        canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
-    elif canvas_color == 'white':
-        canvas = tf.ones(shape=I_colors.shape, dtype=dtype)
-    elif canvas_color == 'black':
-        canvas = tf.zeros(shape=I_colors.shape, dtype=dtype)
-    elif canvas_color == 'noise':
-        canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
+    if isinstance(canvas_color,str):
+        if canvas_color == 'gray':
+            canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
+        elif canvas_color == 'white':
+            canvas = tf.ones(shape=I_colors.shape, dtype=dtype)
+        elif canvas_color == 'black':
+            canvas = tf.zeros(shape=I_colors.shape, dtype=dtype)
+        elif canvas_color == 'noise':
+            canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
     else:
         canvas = tf.constant(name='canvas_bg', value=canvas_color, dtype=dtype)
 
