@@ -72,6 +72,8 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
     if init_prob is not None:
         sorted_vals = np.sort(init_prob.flatten())
         norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+        norm_cdf = norm_cdf-np.min(norm_cdf)
+        norm_cdf = norm_cdf/np.max(norm_cdf)
     
     for cluster_idx in range(num_clusters + 1):
         cluster_mask = segments==cluster_idx
