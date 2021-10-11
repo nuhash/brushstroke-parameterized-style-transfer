@@ -165,7 +165,7 @@ class BrushstrokeOptimizer:
                                       self.curve_c,
                                       self.location,
                                       self.color,
-                                      self.lossmaps[-1],
+                                      self.lossmaps[-1],],
                              options=config_pb2.RunOptions(report_tensor_allocations_upon_oom=True)
                             )
 
