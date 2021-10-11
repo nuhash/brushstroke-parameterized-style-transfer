@@ -155,7 +155,7 @@ class BrushstrokeOptimizer:
             steps = trange(self.num_steps, desc='', leave=True)
             for step in steps:
                 
-                I_, loss_dict_, params_dict_, _,s,e,c,l,colours = \
+                I_, loss_dict_, params_dict_, _,s,e,c,l,colours,lm = \
                     sess.run(fetches=[self.I, 
                                       self.loss_dict, 
                                       self.params_dict, 
@@ -164,7 +164,8 @@ class BrushstrokeOptimizer:
                                       self.curve_e,
                                       self.curve_c,
                                       self.location,
-                                      self.color],
+                                      self.color,
+                                      self.lossmaps[-1],
                              options=config_pb2.RunOptions(report_tensor_allocations_upon_oom=True)
                             )
 
@@ -178,7 +179,7 @@ class BrushstrokeOptimizer:
 
                 steps.refresh()
                 if self.streamlit_pbar is not None: self.streamlit_pbar.update(1)
-        return Image.fromarray(np.array(np.clip(I_, 0, 1) * 255, dtype=np.uint8)),s,e,c,l,colours
+        return Image.fromarray(np.array(np.clip(I_, 0, 1) * 255, dtype=np.uint8)),s,e,c,l,colours,lm
 
     def _initialize(self):
         location, s, e, c, width, color = utils.initialize_brushstrokes(self.content_img_np, 
@@ -240,12 +241,18 @@ class BrushstrokeOptimizer:
                                              size=(int(self.canvas_height), int(self.canvas_width)))
 
         self.loss_dict = {}
-        self.loss_dict['content'] = ops.content_loss(self.vgg.extract_features(rendered_canvas_resized),
-                                                     self.vgg.extract_features(content_img_resized),
+        canvas_feats = self.vgg.extract_features(rendered_canvas_resized)
+        content_feats = self.vgg.extract_features(content_img_resized)
+        layers=['conv4_2', 'conv5_2']
+        self.loss_dict['content'] = ops.content_loss(canvas_feats,
+                                                     content_feats,
                                                      #layers=['conv1_2', 'conv2_2', 'conv3_2', 'conv4_2', 'conv5_2'],
-                                                     layers=['conv4_2', 'conv5_2'],
+                                                     layers=layers,
                                                      weights=[1, 1],
                                                      scale_by_y=True)
+        self.lossmaps = []
+        for layer in layers:
+            self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats[layer]-content_feats[layer]) * tf.minimum(yf, tf.sigmoid(yf)),-1))
         self.loss_dict['content'] *= self.content_weight
 
         #self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
