@@ -56,7 +56,7 @@ def download_weights(url, name):
 # Brushstrokes
 #------------------------------------------------------------------
 
-def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5):
+def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5,init_width=None):
     segments += np.abs(np.min(segments))
     num_clusters = np.max(segments)                                                                                                     
     clusters_params = {'center': [],
@@ -105,7 +105,10 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         intersec_points = p + u.reshape(-1, 1) * (q - p)
         intersec_points = intersec_points[intersec_idcs]
         
-        width = np.sum((intersec_points[0] - intersec_points[1])**2)
+        if init_width == None:
+            width = np.sum((intersec_points[0] - intersec_points[1])**2)
+       else:
+            width = init_width
         
         if width == 0.0: continue
 
@@ -113,7 +116,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
         
         if init_prob is not None:
-            content_error = init_prob[int(center_x),int(center_y)]
+            content_error = np.max(init_prob[cluster_mask_nonzeros[0].astype(np.int),cluster_mask_nonzeros[1].astype(np.int)])
             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
             if offset>prob_keep:
                 continue
@@ -177,7 +180,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5):
+def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None):
 
     if init == 'random':
         # Brushstroke colors
@@ -245,6 +248,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               sec_scale=sec_scale,
                                                               width_scale=width_scale,
                                                               init_prob=init_prob,
-                                                              offset=offset)
+                                                              offset=offset,
+                                                              init_width=init_width)
 
     return location, s, e, c, width, color
