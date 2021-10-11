@@ -111,7 +111,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
         
         if init_prob is not None:
-            content_error = init_prob[center_x,center_y]
+            content_error = init_prob[int(center_x),int(center_y)]
             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
             if np.random.uniform()>prob_keep:
                 continue
