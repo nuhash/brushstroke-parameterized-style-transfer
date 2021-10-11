@@ -252,7 +252,7 @@ class BrushstrokeOptimizer:
                                                      scale_by_y=True)
         self.lossmaps = []
         for layer in layers:
-            self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats[layer]-content_feats[layer]) * tf.minimum(yf, tf.sigmoid(yf)),-1))
+            self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats[layer]-content_feats[layer]) * tf.minimum(content_feats[layer], tf.sigmoid(content_feats[layer])),-1))
         self.loss_dict['content'] *= self.content_weight
 
         #self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
