@@ -168,7 +168,7 @@ class BrushstrokeOptimizer:
             steps = trange(self.num_steps, desc='', leave=True)
             for step in steps:
                 
-                I_, loss_dict_, params_dict_, _,s,e,c,l,colours,lm = \
+                I_, loss_dict_, params_dict_, _,s,e,c,l,colours,lm,w = \
                     sess.run(fetches=[self.I, 
                                       self.loss_dict, 
                                       self.params_dict, 
@@ -178,7 +178,8 @@ class BrushstrokeOptimizer:
                                       self.curve_c,
                                       self.location,
                                       self.color,
-                                      self.lossmaps[-1],],
+                                      self.lossmaps[-1],
+                                      self.width],
                              options=config_pb2.RunOptions(report_tensor_allocations_upon_oom=True)
                             )
 
@@ -192,7 +193,7 @@ class BrushstrokeOptimizer:
 
                 steps.refresh()
                 if self.streamlit_pbar is not None: self.streamlit_pbar.update(1)
-        return Image.fromarray(np.array(np.clip(I_, 0, 1) * 255, dtype=np.uint8)),s,e,c,l,colours,lm
+        return Image.fromarray(np.array(np.clip(I_, 0, 1) * 255, dtype=np.uint8)),s,e,c,l,colours,lm,w
 
     def _initialize(self):
         location, s, e, c, width, color = utils.initialize_brushstrokes(self.content_img_np, 
