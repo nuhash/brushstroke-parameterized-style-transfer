@@ -163,7 +163,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp'):
+def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None):
 
     if init == 'random':
         # Brushstroke colors
@@ -191,6 +191,30 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
         sec_center = (s + e + c) / 3.0
         s, e, c = [x - sec_center for x in [s, e, c]]
         s, e, c = [x * sec_scale for x in [s, e, c]]
+    elif init=="vor":
+        flat_prob = init_prob.flatten()
+        sample_index = np.random.choice(a=flat_prob.size, p=flat_prob,size=(num_strokes,))
+        unique_samples = np.unique(sample_index)
+        adjusted_index = np.unravel_index(sample_index, init_prob.shape)
+        
+        indices = np.stack(adjusted_index,-1)
+        vor = scipy.spatial.Voronoi(indices)
+        
+        image_points = np.reshape(np.stack(np.meshgrid(np.arange(init_prob.shape[1]),np.arange(init_prob.shape[0])),-1),(-1,2))
+        ip2 = image_points**2
+        sp2 = indices**2
+
+        cluster_image = np.zeros(init_prob.shape)
+        for i in range(image_points.shape[0]):
+          dists = np.sum(ip2[i,:]-2*image_points[i:i+1,:]*indices+sp2,-1)
+          cluster_image[image_points[i,1],image_points[i,0]] = np.argmin(dists)
+        
+        location, s, e, c, width, color = clusters_to_strokes(cluster_image,
+                                                              content_img,
+                                                              canvas_height,
+                                                              canvas_width,
+                                                              sec_scale=sec_scale,
+                                                              width_scale=width_scale)
     else:
         segments = slic(content_img,
                         n_segments=num_strokes,
