@@ -125,7 +125,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         clusters_params['e'].append(point_b / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
         clusters_params['bp2'].append(intersec_points[1] / img.shape[:2])
-        clusters_params['width'].append(np.sum((intersec_points[0] - intersec_points[1])**2))
+        clusters_params['width'].append(width)
         
         clusters_params['color_rgb'].append(np.mean(img[cluster_mask], axis=0))
         
