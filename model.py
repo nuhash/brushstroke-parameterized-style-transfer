@@ -92,6 +92,7 @@ class BrushstrokeOptimizer:
                  dtype                    = 'float32',      # Data type (str).
                  init = "sp",
                  init_prob = None,
+                 offset=0.5,
                 ):
     
         self.draw_strength = draw_strength
@@ -113,6 +114,7 @@ class BrushstrokeOptimizer:
         
         self.init = init
         self.init_prob = init_prob
+        self.offset = offset
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -194,7 +196,8 @@ class BrushstrokeOptimizer:
                                                                         self.length_scale, 
                                                                         self.width_scale,
                                                                         init=self.init,
-                                                                        init_prob = self.init_prob)
+                                                                        init_prob = self.init_prob,
+                                                                       offset=self.offset)
 
         self.curve_s = tf.Variable(name='curve_s', initial_value=s, dtype=self.dtype)
         self.curve_e = tf.Variable(name='curve_e', initial_value=e, dtype=self.dtype)
