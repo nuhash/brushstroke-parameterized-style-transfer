@@ -56,7 +56,7 @@ def download_weights(url, name):
 # Brushstrokes
 #------------------------------------------------------------------
 
-def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
+def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None):
     segments += np.abs(np.min(segments))
     num_clusters = np.max(segments)                                                                                                     
     clusters_params = {'center': [],
@@ -69,6 +69,8 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
                        'width': [],
                        'color_rgb': []
                        }
+    sorted_vals = np.sort(init_prob.flatten())
+    norm_cdf = scipy.stats.norm.cdf(sorted_vals)
     
     for cluster_idx in range(num_clusters + 1):
         cluster_mask = segments==cluster_idx
@@ -104,6 +106,15 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         
         if width == 0.0: continue
 
+        center_x = np.mean(cluster_mask_nonzeros[0]) / img.shape[0]
+        center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
+        
+        if init_prob is not None:
+            content_error = init_prob[center_x,center_y]
+            prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
+            if np.random.uniform()>prob_keep:
+                continue
+            
         clusters_params['s'].append(point_a / img.shape[:2])
         clusters_params['e'].append(point_b / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
@@ -111,8 +122,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         clusters_params['width'].append(np.sum((intersec_points[0] - intersec_points[1])**2))
         
         clusters_params['color_rgb'].append(np.mean(img[cluster_mask], axis=0))
-        center_x = np.mean(cluster_mask_nonzeros[0]) / img.shape[0]
-        center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
+        
         clusters_params['center'].append(np.array([center_x, center_y]))
         clusters_params['num_pixels'].append(np.sum(cluster_mask))
         clusters_params['stddev'].append(np.mean(np.std(img[cluster_mask], axis=0)))
@@ -230,6 +240,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               canvas_height,
                                                               canvas_width,
                                                               sec_scale=sec_scale,
-                                                              width_scale=width_scale)
+                                                              width_scale=width_scale,
+                                                              init_prob=init_prob)
 
     return location, s, e, c, width, color
