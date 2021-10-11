@@ -93,6 +93,9 @@ class BrushstrokeOptimizer:
                  init = "sp",
                  init_prob = None,
                  offset=0.5,
+                 init_width=None,
+                 width_fixed = False,
+                 optim_rate=0.1
                 ):
     
         self.draw_strength = draw_strength
@@ -115,6 +118,9 @@ class BrushstrokeOptimizer:
         self.init = init
         self.init_prob = init_prob
         self.offset = offset
+        self.init_width = init_width
+        self.width_fixed = width_fixed
+        self.optim_rate = optim_rate
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -197,7 +203,8 @@ class BrushstrokeOptimizer:
                                                                         self.width_scale,
                                                                         init=self.init,
                                                                         init_prob = self.init_prob,
-                                                                       offset=self.offset)
+                                                                        offset=self.offset,
+                                                                        init_width=self.init_width)
 
         self.curve_s = tf.Variable(name='curve_s', initial_value=s, dtype=self.dtype)
         self.curve_e = tf.Variable(name='curve_e', initial_value=e, dtype=self.dtype)
@@ -293,9 +300,12 @@ class BrushstrokeOptimizer:
             loss += self.loss_dict[key]
         
         step_ops = []
-        optim_step = tf.train.AdamOptimizer(0.1).minimize(
+        var_list = [self.location, self.curve_s, self.curve_e, self.curve_c, self.width]
+        if self.width_fixed:
+            var_list = var_list[:-1]
+        optim_step = tf.train.AdamOptimizer(self.optim_rate).minimize(
             loss=loss, 
-            var_list=[self.location, self.curve_s, self.curve_e, self.curve_c, self.width])
+            var_list=var_list)
         step_ops.append(optim_step)
         #optim_step_color = tf.train.AdamOptimizer(0.01).minimize(
         #    loss=self.loss_dict['style'],
