@@ -303,7 +303,7 @@ class BrushstrokeOptimizer:
         step_ops = []
         var_list = [self.location, self.curve_s, self.curve_e, self.curve_c, self.width]
         if self.width_fixed:
-            var_list = var_list[:-1]
+            var_list = [self.location, self.curve_s, self.curve_e, self.curve_c]
         optim_step = tf.train.AdamOptimizer(self.optim_rate).minimize(
             loss=loss, 
             var_list=var_list)
@@ -319,7 +319,10 @@ class BrushstrokeOptimizer:
             coord_x, coord_y = tf.gather(self.location, axis=-1, indices=[0]), tf.gather(self.location, axis=-1, indices=[1])
             coord_clip = tf.concat([tf.clip_by_value(coord_x, 0, self.canvas_height), tf.clip_by_value(coord_y, 0, self.canvas_width)], axis=-1)
             step_ops.append(tf.assign(self.location, coord_clip))
-            step_ops.append(tf.assign(self.width, tf.nn.relu(self.width)))
+            if self.width_fixed == False:
+              step_ops.append(tf.assign(self.width, tf.nn.relu(self.width)))
+            else:
+              step_ops.append(tf.assign(self.width, tf.clip_by_value(self.width,self.init_width-0.1,self.init_width+0.1)))
         self.optim_step_with_constraints = tf.group(*step_ops)
 
 
