@@ -56,7 +56,7 @@ def download_weights(url, name):
 # Brushstrokes
 #------------------------------------------------------------------
 
-def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None):
+def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5):
     segments += np.abs(np.min(segments))
     num_clusters = np.max(segments)                                                                                                     
     clusters_params = {'center': [],
@@ -115,7 +115,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         if init_prob is not None:
             content_error = init_prob[int(center_x),int(center_y)]
             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
-            if np.random.uniform()>prob_keep:
+            if offset>prob_keep:
                 continue
             
         clusters_params['s'].append(point_a / img.shape[:2])
@@ -177,7 +177,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None):
+def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5):
 
     if init == 'random':
         # Brushstroke colors
@@ -244,6 +244,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               canvas_width,
                                                               sec_scale=sec_scale,
                                                               width_scale=width_scale,
-                                                              init_prob=init_prob)
+                                                              init_prob=init_prob,
+                                                              offset=offset)
 
     return location, s, e, c, width, color
