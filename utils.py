@@ -209,7 +209,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
         for i in range(image_points.shape[0]):
           dists = np.sum(ip2[i,:]-2*image_points[i:i+1,:]*indices+sp2,-1)
           cluster_image[image_points[i,1],image_points[i,0]] = np.argmin(dists)
-        
+        cluster_image = cluster_image.astype(np.int)
         location, s, e, c, width, color = clusters_to_strokes(cluster_image,
                                                               content_img,
                                                               canvas_height,
