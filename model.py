@@ -249,10 +249,16 @@ class BrushstrokeOptimizer:
         rendered_canvas_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.I),
                                              size=(int(self.canvas_height), int(self.canvas_width)))
-
+        rendered_canvas_resized2 = \
+            tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.I),
+                                             size=(int(2*self.canvas_height), int(2*self.canvas_width)))
         content_img_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.content_img),
                                              size=(int(self.canvas_height), int(self.canvas_width)))
+        
+        content_img_resized2 = \
+            tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.content_img),
+                                             size=(int(2*self.canvas_height), int(2*self.canvas_width)))
 
         style_img_resized = \
             tf.image.resize_nearest_neighbor(images=ops.preprocess_img(self.style_img),
@@ -268,9 +274,11 @@ class BrushstrokeOptimizer:
                                                      layers=layers,
                                                      weights=[1, 1],
                                                      scale_by_y=True)
+        canvas_feats2 = self.vgg.extract_features(rendered_canvas_resized2)
+        content_feats2 = self.vgg.extract_features(content_image_resized2)
         self.lossmaps = []
         for layer in layers:
-            self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats[layer]-content_feats[layer]) * tf.minimum(content_feats[layer], tf.sigmoid(content_feats[layer])),-1))
+            self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats2[layer]-content_feats2[layer]) * tf.minimum(content_feats2[layer], tf.sigmoid(content_feats2[layer])),-1))
         self.loss_dict['content'] *= self.content_weight
 
         #self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
