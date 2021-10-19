@@ -275,7 +275,7 @@ class BrushstrokeOptimizer:
                                                      weights=[1, 1],
                                                      scale_by_y=True)
         canvas_feats2 = self.vgg.extract_features(rendered_canvas_resized2)
-        content_feats2 = self.vgg.extract_features(content_image_resized2)
+        content_feats2 = self.vgg.extract_features(content_img_resized2)
         self.lossmaps = []
         for layer in layers:
             self.lossmaps.append(tf.reduce_mean(tf.square(canvas_feats2[layer]-content_feats2[layer]) * tf.minimum(content_feats2[layer], tf.sigmoid(content_feats2[layer])),-1))
