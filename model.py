@@ -232,7 +232,7 @@ class BrushstrokeOptimizer:
                                                          e=self.curve_e + self.location,
                                                          c=self.curve_c + self.location,
                                                          colors = self.color,
-                                                         widths = self.width
+                                                         widths = self.width,
                                                          num_points=self.S,
                                                          dtype=self.dtype)
 
