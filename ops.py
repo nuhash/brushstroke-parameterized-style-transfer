@@ -73,7 +73,7 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype
     p = tf.gather(p,tf.range(1,2*num_points-1))
     t = tf.linspace(0., 1., num_points)
     t = tf.cast(t, dtype=dtype)
-    t = tf.gather(params=t,indices=tf.constant(p))
+    t = tf.gather(params=t,indices=p)
     t = tf.stack([t] * N, axis=0)
     s_x = tf.expand_dims(s[..., 0], axis=1)
     s_y = tf.expand_dims(s[..., 1], axis=1)
