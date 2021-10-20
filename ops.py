@@ -68,8 +68,9 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype
        (tensor): Coordinates of the points on the Bezier curves, shape [N, num_points, 2] 
     """
     N, _ = s.shape.as_list()
-    p = np.arange(num_points)
-    p = np.repeat(p,2)[1:-1]
+    p = tf.range(num_points)
+    p = tf.repeat(p,2)
+    p = tf.gather(p,tf.range(1,2*num_points-1))
     t = tf.linspace(0., 1., num_points)
     t = tf.cast(t, dtype=dtype)
     t = tf.gather(params=t,indices=tf.constant(p))
