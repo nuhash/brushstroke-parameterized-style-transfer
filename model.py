@@ -238,7 +238,7 @@ class BrushstrokeOptimizer:
 
         self.I = ops.renderer(curve_points, 
                               locs, 
-                              colours, 
+                              colors, 
                               widths, 
                               self.canvas_height, 
                               self.canvas_width, 
