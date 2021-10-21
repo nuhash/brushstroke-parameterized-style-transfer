@@ -176,7 +176,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
     s, e, c = [x * sec_scale for x in [s, e, c]]
     
     location, s, e, c, width, color = [x.astype(np.float32) for x in [location, s, e, c, width, color]]
-    
+    print("Num clusters: {}; Num strokes: {}".format(num_clusters,N))
     return location, s, e, c, width, color
 
 
