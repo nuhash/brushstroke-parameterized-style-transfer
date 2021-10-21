@@ -143,7 +143,7 @@ class BrushstrokeOptimizer:
         if self.init_prob is not None:
             self.init_prob = skimage.transform.resize(self.init_prob,(next_H,next_W,),order=3)
         if isinstance(self.canvas_color,str) is False:
-            self.canvas_colour = skimage.transform.resize(self.canvas,(next_H,next_W,),order=3)
+            self.canvas_colour = skimage.transform.resize(self.canvas_color,(next_H,next_W,),order=3)
         content_img = np.array(content_img).astype(self.dtype)
         style_img = np.array(style_img).astype(self.dtype)
 
