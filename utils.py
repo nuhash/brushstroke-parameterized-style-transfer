@@ -234,14 +234,16 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               width_scale=width_scale)
     else:
         if init_prob is not None:
-            sorted_vals = np.sort(init_prob.flatten())
-            norm_cdf = scipy.stats.norm.cdf(sorted_vals)
-            norm_cdf = norm_cdf-np.min(norm_cdf)
-            norm_cdf = norm_cdf/np.max(norm_cdf)
-            permap = np.zeros(init_prob.shape)
-            for i in range(canvas_height):
-                for j in range(canvas_width):
-                    permap[i,j] = norm_cdf[(np.abs(sorted_vals - init_prob[i,j])).argmin()]
+             sorted_vals = np.sort(init_prob.flatten())
+             qt = np.quantile(sorted_vals,offset)
+#             norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+#             norm_cdf = norm_cdf-np.min(norm_cdf)
+#             norm_cdf = norm_cdf/np.max(norm_cdf)
+#             permap = np.zeros((init_prob.shape[0]//2,init_prob.shape[1]//2))
+#             for i in range(canvas_height//2):
+#                 for j in range(canvas_width//2):
+#                     permap[i,j] = norm_cdf[(np.abs(sorted_vals - init_prob[i,j])).argmin()]
+#             permap = skimage.transform.resize(permap,(canvas_height,canvas_width,))
             segments = slic(content_img,
                             n_segments=num_strokes,
                             min_size_factor=0.02,
@@ -249,7 +251,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             compactness=2,
                             sigma=1,
                             start_label=0,
-                            mask=permap>offset)
+                            mask=init_prob>qt)
         else:
             segments = slic(content_img,
                             n_segments=num_strokes,
