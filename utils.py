@@ -234,8 +234,8 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               width_scale=width_scale)
     else:
         if init_prob is not None:
-             sorted_vals = np.sort(init_prob.flatten())
-             qt = np.quantile(sorted_vals,offset)
+            sorted_vals = np.sort(init_prob.flatten())
+            qt = np.quantile(sorted_vals,offset)
 #             norm_cdf = scipy.stats.norm.cdf(sorted_vals)
 #             norm_cdf = norm_cdf-np.min(norm_cdf)
 #             norm_cdf = norm_cdf/np.max(norm_cdf)
