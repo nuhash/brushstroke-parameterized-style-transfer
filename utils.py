@@ -248,7 +248,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             max_size_factor=4.,
                             compactness=2,
                             sigma=1,
-                            start_label=0
+                            start_label=0,
                             mask=permap>offset)
         else:
             segments = slic(content_img,
