@@ -9,7 +9,7 @@ import os
 import numpy as np
 from PIL import Image
 from tqdm import trange
-
+import skimage.transform
 import networks
 import ops
 import utils
@@ -127,22 +127,26 @@ class BrushstrokeOptimizer:
         if H < W:                                                                                        
             new_H = resolution                                                                           
             new_W = int((W / H) * new_H)
+            next_W = int(2*(W / H) * new_H)
+            next_H = 2*resolution
         else:                                                                                            
             new_W = resolution
-            new_H = int((H / W) * new_W)                                                                 
+            new_H = int((H / W) * new_W)                                                                
+            next_H = int(2*(H / W) * new_W) 
+            next_W = 2*resolution
                                                                                                          
         self.canvas_height = new_H
         self.canvas_width = new_W
 
         content_img = content_img.resize((self.canvas_width, self.canvas_height))
         style_img = style_img.resize((self.canvas_width, self.canvas_height))
-        
+        self.initprob = skimage.transform.resize(self.initprob,(next_H,next_W,),order=3)
         content_img = np.array(content_img).astype(self.dtype)
         style_img = np.array(style_img).astype(self.dtype)
 
         content_img /= 255.0
         style_img /= 255.0
-
+        
         self.content_img_np = content_img
         self.style_img_np = style_img
 
