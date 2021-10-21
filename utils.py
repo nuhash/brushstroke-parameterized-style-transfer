@@ -57,7 +57,7 @@ def download_weights(url, name):
 #------------------------------------------------------------------
 
 def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5,init_width=None):
-    segments += np.abs(np.min(segments))
+    segments += -np.abs(np.min(segments))
     num_clusters = np.max(segments)                                                                                                     
     clusters_params = {'center': [],
                        's': [],
@@ -69,11 +69,11 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
                        'width': [],
                        'color_rgb': []
                        }
-    if init_prob is not None:
-        sorted_vals = np.sort(init_prob.flatten())
-        norm_cdf = scipy.stats.norm.cdf(sorted_vals)
-        norm_cdf = norm_cdf-np.min(norm_cdf)
-        norm_cdf = norm_cdf/np.max(norm_cdf)
+#     if init_prob is not None:
+#         sorted_vals = np.sort(init_prob.flatten())
+#         norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+#         norm_cdf = norm_cdf-np.min(norm_cdf)
+#         norm_cdf = norm_cdf/np.max(norm_cdf)
     
     for cluster_idx in range(num_clusters + 1):
         cluster_mask = segments==cluster_idx
@@ -115,11 +115,11 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         center_x = np.mean(cluster_mask_nonzeros[0]) / img.shape[0]
         center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
         
-        if init_prob is not None:
-            content_error = np.max(init_prob[cluster_mask_nonzeros[0].astype(np.int),cluster_mask_nonzeros[1].astype(np.int)])
-            prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
-            if offset>prob_keep:
-                continue
+#         if init_prob is not None:
+#             content_error = np.max(init_prob[cluster_mask_nonzeros[0].astype(np.int),cluster_mask_nonzeros[1].astype(np.int)])
+#             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
+#             if offset>prob_keep:
+#                 continue
             
         clusters_params['s'].append(point_a / img.shape[:2])
         clusters_params['e'].append(point_b / img.shape[:2])
@@ -233,13 +233,31 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                                                               sec_scale=sec_scale,
                                                               width_scale=width_scale)
     else:
-        segments = slic(content_img,
-                        n_segments=num_strokes,
-                        min_size_factor=0.02,
-                        max_size_factor=4.,
-                        compactness=2,
-                        sigma=1,
-                        start_label=0)
+        if init_prob is not None:
+            sorted_vals = np.sort(init_prob.flatten())
+            norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+            norm_cdf = norm_cdf-np.min(norm_cdf)
+            norm_cdf = norm_cdf/np.max(norm_cdf)
+            permap = np.zeros(init_prob.shape)
+            for i in range(canvas_height):
+                for j in range(canvas_width):
+                    permap[i,j] = norm_cdf[(np.abs(sorted_vals - init_prob[i,j])).argmin()]
+            segments = slic(content_img,
+                            n_segments=num_strokes,
+                            min_size_factor=0.02,
+                            max_size_factor=4.,
+                            compactness=2,
+                            sigma=1,
+                            start_label=0
+                            mask=permap>offset)
+        else:
+            segments = slic(content_img,
+                            n_segments=num_strokes,
+                            min_size_factor=0.02,
+                            max_size_factor=4.,
+                            compactness=2,
+                            sigma=1,
+                            start_label=0)
 
         location, s, e, c, width, color = clusters_to_strokes(segments,
                                                               content_img,
