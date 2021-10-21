@@ -140,7 +140,7 @@ class BrushstrokeOptimizer:
 
         content_img = content_img.resize((self.canvas_width, self.canvas_height))
         style_img = style_img.resize((self.canvas_width, self.canvas_height))
-        self.initprob = skimage.transform.resize(self.initprob,(next_H,next_W,),order=3)
+        self.init_prob = skimage.transform.resize(self.init_prob,(next_H,next_W,),order=3)
         content_img = np.array(content_img).astype(self.dtype)
         style_img = np.array(style_img).astype(self.dtype)
 
