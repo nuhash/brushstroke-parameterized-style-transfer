@@ -6,6 +6,7 @@ import numpy as np
 from skimage.segmentation import slic
 from scipy.spatial import ConvexHull
 import scipy.spatial
+import matplotlib.pyplot as plt
 
 
 #------------------------------------------------------------------
@@ -247,6 +248,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             sigma=1,
                             start_label=0,
                             mask=init_prob>=err_thres)
+            
         else:
             segments = slic(content_img,
                             n_segments=num_strokes,
@@ -255,7 +257,8 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             compactness=2,
                             sigma=1,
                             start_label=0)
-
+        plt.imshow(segmentation.mark_boundaries(content_img, segments))
+        plt.show()
         location, s, e, c, width, color = clusters_to_strokes(segments,
                                                               content_img,
                                                               canvas_height,
