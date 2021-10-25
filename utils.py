@@ -173,8 +173,10 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
 #                 continue
         center_point = np.array([center_x, center_y])
         ori = v[::-1,major]*np.array([1,-1])
-        clusters_params['s'].append((center_point+1*ori) / img.shape[:2])
-        clusters_params['e'].append((center_point-1*ori) / img.shape[:2])
+#         clusters_params['s'].append((center_point+1*ori) / img.shape[:2])
+#         clusters_params['e'].append((center_point-1*ori) / img.shape[:2])
+        clusters_params['s'].append((point_a) / img.shape[:2])
+        clusters_params['e'].append((point_b) / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
         clusters_params['bp2'].append(intersec_points[1] / img.shape[:2])
         clusters_params['width'].append(width)
