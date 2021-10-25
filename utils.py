@@ -168,7 +168,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
 #             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
 #             if offset>prob_keep:
 #                 continue
-        center_point = np.array([center_x/ img.shape[0], center_y/ img.shape[1]])
+        center_point = np.array([center_x, center_y])
         clusters_params['s'].append((center_point+10*v[:,major]) / img.shape[:2])
         clusters_params['e'].append((center_point-10*v[:,major]) / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
