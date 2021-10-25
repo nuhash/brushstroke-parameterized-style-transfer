@@ -154,8 +154,8 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         
         if width == 0.0: continue
 
-        center_x = np.mean(cluster_mask_nonzeros[0]) / img.shape[0]
-        center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
+        center_x = np.mean(cluster_mask_nonzeros[0]) 
+        center_y = np.mean(cluster_mask_nonzeros[1]) 
         
         dists = np.sqrt(np.sum((points[:,:2]-np.array([[center_x,center_y]]))**2,-1))
         weights = np.exp(-dists)/np.sum(np.exp(-dists))
@@ -168,7 +168,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
 #             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
 #             if offset>prob_keep:
 #                 continue
-        center_point = np.array([center_x, center_y])
+        center_point = np.array([center_x/ img.shape[0], center_y/ img.shape[1]])
         clusters_params['s'].append((center_point+10*v[:,major]) / img.shape[:2])
         clusters_params['e'].append((center_point-10*v[:,major]) / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
