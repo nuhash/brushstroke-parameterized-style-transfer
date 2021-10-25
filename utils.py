@@ -8,7 +8,8 @@ from skimage import segmentation
 from scipy.spatial import ConvexHull
 import scipy.spatial
 import matplotlib.pyplot as plt
-
+import cv
+import skimage
 
 #------------------------------------------------------------------
 # I/O
@@ -58,7 +59,46 @@ def download_weights(url, name):
 # Brushstrokes
 #------------------------------------------------------------------
 
-def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5,init_width=None):
+def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5,init_width=None,gradthresh=0.08):
+    dx = cv2.Sobel(np.array(content_img),cv2.CV_64F,1,0,ksize=11,scale=2**(2+1+0-11*2))
+    dy = cv2.Sobel(np.array(content_img),cv2.CV_64F,0,1,ksize=11,scale=2**(2+0+1-11*2))
+    mag = np.sqrt(dx**2+dy**2)
+    dxn = dx/(mag+0.0001)
+    dyn = dy/(mag+0.0001)
+    
+    fx = np.max(np.abs(dx),-1)
+    fy = np.max(np.abs(dy),-1)
+    fm = fx+fy
+    blurfm = skimage.filters.gaussian(fm)
+    
+    sorted_vals = np.sort(blurfm.flatten())
+    norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+    norm_cdf = norm_cdf-np.min(norm_cdf)
+    norm_cdf = norm_cdf/np.max(norm_cdf)
+    threshold = sorted_vals[np.argmin(np.abs(norm_cdf-gradthresh))]
+    
+    points = []
+    stride = 8
+    xp = np.arange(0,fm.shape[0],stride)
+    yp = np.arange(0,fm.shape[1],stride)
+    fm = fm/np.max(fm)
+    for x in xp:
+      for y in yp:
+        lmax = np.argmax(fm[x:x+stride,y:y+stride]).astype(np.int)
+        xoff = lmax//stride
+        yoff = lmax%stride
+        if x+xoff>=fm.shape[0] or y+yoff>=fm.shape[1]:
+          continue
+        if fm[x+xoff,y+yoff]>threshold:
+          points.append([x+xoff,y+yoff,np.mean(dxn[x+xoff,y+yoff]),np.mean(dyn[x+xoff,y+yoff])])
+    points = np.array(points)
+    tensors = np.zeros((points.shape[0],2,2))
+    theta = np.arctan2(points[:,2],points[:,3])
+    tensors[:,0,0] = np.cos(2*theta)
+    tensors[:,0,1] = np.sin(2*theta)
+    tensors[:,1,0] = np.sin(2*theta)
+    tensors[:,1,1] = -np.cos(2*theta)
+    
     segments += -np.abs(np.min(segments))
     num_clusters = np.max(segments)                                                                                                     
     clusters_params = {'center': [],
@@ -117,21 +157,27 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         center_x = np.mean(cluster_mask_nonzeros[0]) / img.shape[0]
         center_y = np.mean(cluster_mask_nonzeros[1]) / img.shape[1]
         
+        dists = np.sqrt(np.sum((points[:,:2]-np.array([[center_x,center_y]]))**2,-1))
+        weights = np.exp(-dists)/np.sum(np.exp(-dists))
+        localtensor = np.sum(tensors*np.reshape(weights,(points.shape[0],1,1)),0)
+        w,v = np.linalg.eig(localtensor)
+        major = np.argmax(w)
+        
 #         if init_prob is not None:
 #             content_error = np.max(init_prob[cluster_mask_nonzeros[0].astype(np.int),cluster_mask_nonzeros[1].astype(np.int)])
 #             prob_keep = norm_cdf[(np.abs(sorted_vals - content_error)).argmin()]
 #             if offset>prob_keep:
 #                 continue
-            
-        clusters_params['s'].append(point_a / img.shape[:2])
-        clusters_params['e'].append(point_b / img.shape[:2])
+        center_point = np.array([center_x, center_y])
+        clusters_params['s'].append((center_point+10*v[:,major]) / img.shape[:2])
+        clusters_params['e'].append((center_point-10*v[:,major]) / img.shape[:2])
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
         clusters_params['bp2'].append(intersec_points[1] / img.shape[:2])
         clusters_params['width'].append(width)
         
         clusters_params['color_rgb'].append(np.mean(img[cluster_mask], axis=0))
         
-        clusters_params['center'].append(np.array([center_x, center_y]))
+        clusters_params['center'].append(center_point)
         clusters_params['num_pixels'].append(np.sum(cluster_mask))
         clusters_params['stddev'].append(np.mean(np.std(img[cluster_mask], axis=0)))
         
