@@ -60,8 +60,8 @@ def download_weights(url, name):
 #------------------------------------------------------------------
 
 def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init_prob=None,offset=0.5,init_width=None,gradthresh=0.08):
-    dx = cv2.Sobel(np.array(content_img),cv2.CV_64F,1,0,ksize=11,scale=2**(2+1+0-11*2))
-    dy = cv2.Sobel(np.array(content_img),cv2.CV_64F,0,1,ksize=11,scale=2**(2+0+1-11*2))
+    dx = cv2.Sobel(np.array(img),cv2.CV_64F,1,0,ksize=11,scale=2**(2+1+0-11*2))
+    dy = cv2.Sobel(np.array(img),cv2.CV_64F,0,1,ksize=11,scale=2**(2+0+1-11*2))
     mag = np.sqrt(dx**2+dy**2)
     dxn = dx/(mag+0.0001)
     dyn = dy/(mag+0.0001)
