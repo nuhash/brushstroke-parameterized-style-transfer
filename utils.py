@@ -177,7 +177,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         
         clusters_params['color_rgb'].append(np.mean(img[cluster_mask], axis=0))
         
-        clusters_params['center'].append(center_point)
+        clusters_params['center'].append(center_point/ img.shape[:2])
         clusters_params['num_pixels'].append(np.sum(cluster_mask))
         clusters_params['stddev'].append(np.mean(np.std(img[cluster_mask], axis=0)))
         
