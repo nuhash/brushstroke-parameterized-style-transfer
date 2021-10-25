@@ -158,7 +158,9 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1,init
         center_y = np.mean(cluster_mask_nonzeros[1]) 
         
         dists = np.sqrt(np.sum((points[:,:2]-np.array([[center_x,center_y]]))**2,-1))
-        weights = np.exp(-dists)/np.sum(np.exp(-dists))
+        sorteddists = np.argsort(dists)
+        weights = np.zeros(dists.shape)
+        weights[sorteddists[:10]]=np.exp(-dists[sorteddists[:10]])/np.sum(np.exp(-dists[sorteddists[:10]]))
         localtensor = np.sum(tensors*np.reshape(weights,(points.shape[0],1,1)),0)
         w,v = np.linalg.eig(localtensor)
         major = np.argmax(w)
