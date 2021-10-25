@@ -8,7 +8,7 @@ from skimage import segmentation
 from scipy.spatial import ConvexHull
 import scipy.spatial
 import matplotlib.pyplot as plt
-import cv
+import cv2
 import skimage
 
 #------------------------------------------------------------------
