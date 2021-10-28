@@ -92,6 +92,7 @@ class BrushstrokeOptimizer:
                  init_width=None,
                  width_fixed = False,
                  optim_rate=0.1
+                 l2weight = 0.0
                 ):
     
         #content_img = Image.open(f'/export/home/mwright/data/neural_painter/image_pairs/photos/{self.args.content_img}')
@@ -120,6 +121,7 @@ class BrushstrokeOptimizer:
         self.init_width = init_width
         self.width_fixed = width_fixed
         self.optim_rate = optim_rate
+        self.l2weight = l2weight
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -288,18 +290,17 @@ class BrushstrokeOptimizer:
                 tf.image.resize(images=ops.preprocess_img(self.style_img),
                                 size=(int(self.canvas_height // 2), int(self.canvas_width // 2)),
                                 method='bilinear')
-
-            loss = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
+            loss = ops.l2_loss(rendered_canvas_resized,content_img_resized,self.l2weight)
+            loss = loss+ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
                                   self.vgg.extract_features(style_img_resized),
                                   layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
-                                  weights=[1, 1, 1, 1, 1])
-            loss *= self.style_weight
+                                  weights=[1, 1, 1, 1, 1])*self.style_weight
             return loss
         
         if self.width_fixed==False:
             varlist.append(self.width)
         tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=self.varlist)
-        #tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
+        tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
         self._constraints()
 
     def _constraints(self):
