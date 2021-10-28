@@ -246,7 +246,7 @@ class BrushstrokeOptimizer:
                                                          #layers=['conv1_2', 'conv2_2', 'conv3_2', 'conv4_2', 'conv5_2'],
                                                          layers=['conv4_2', 'conv5_2'],
                                                          weights=[1, 1],
-                                                         scale_by_y=True)
+                                                         scale_by_y=False)
             self.loss_dict['content'] *= self.content_weight
 
 #             self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
