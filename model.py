@@ -86,6 +86,7 @@ class BrushstrokeOptimizer:
                  curviture_weight         = 4.0,           # Weight for the curviture loss (float).
                  streamlit_pbar           = None,          # Progressbar for streamlit app (obj).
                  dtype                    = 'float32',      # Data type (str).
+                 init = "sp",
                  init_prob = None,
                  offset=0.5,
                  init_width=None,
