@@ -91,7 +91,7 @@ class BrushstrokeOptimizer:
                  offset=0.5,
                  init_width=None,
                  width_fixed = False,
-                 optim_rate=0.1
+                 optim_rate=0.1,
                  l2weight = 0.0
                 ):
     
