@@ -51,7 +51,40 @@ def sample_quadratic_bezier_curve(s, c, e, num_points=20, dtype='float32'):
     x = c_x + (1. - t) ** 2 * (s_x - c_x) + t ** 2 * (e_x - c_x)
     y = c_y + (1. - t) ** 2 * (s_y - c_y) + t ** 2 * (e_y - c_y)
     return tf.stack([x, y], axis=-1)
-
+def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype='float32'):
+    """
+    Samples points from the quadratic bezier curves defined by the control points.
+    Number of points to sample is num.
+    Args:
+        s (tensor): Start point of each curve, shape [N, 2].
+        c (tensor): Control point of each curve, shape [N, 2].
+        e (tensor): End point of each curve, shape [N, 2].
+        num_points (int): Number of points to sample on every curve.
+    Return:
+       (tensor): Coordinates of the points on the Bezier curves, shape [N, num_points, 2] 
+    """
+    N, _ = s.shape.as_list()
+    p = tf.range(num_points)
+    p = tf.repeat(p,2)
+    p = tf.gather(p,tf.range(1,2*num_points-1))
+    t = tf.linspace(0., 1., num_points)
+    t = tf.cast(t, dtype=dtype)
+    t = tf.gather(params=t,indices=p)
+    t = tf.stack([t] * N, axis=0)
+    s_x = tf.expand_dims(s[..., 0], axis=1)
+    s_y = tf.expand_dims(s[..., 1], axis=1)
+    e_x = tf.expand_dims(e[..., 0], axis=1)
+    e_y = tf.expand_dims(e[..., 1], axis=1)
+    c_x = tf.expand_dims(c[..., 0], axis=1)
+    c_y = tf.expand_dims(c[..., 1], axis=1)
+    x = c_x + (1. - t) ** 2 * (s_x - c_x) + t ** 2 * (e_x - c_x)
+    y = c_y + (1. - t) ** 2 * (s_y - c_y) + t ** 2 * (e_y - c_y)
+    points = tf.stack([x, y], axis=-1)
+    points = tf.reshape(points,(N*(num_points-1),2,2))
+    locations = tf.reduce_mean(points,axis=1)
+    colors = tf.repeat(colors,repeats=[num_points-1]*N,axis=0)
+    widths = tf.repeat(widths,repeats=[num_points-1]*N,axis=0)
+    return points,locations,colors,widths
 
 def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gray', dtype='float32'):
     """                                                                                                  
@@ -142,14 +175,17 @@ def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gra
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
     bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
     bs_mask = tf.math.sigmoid(bs - tf.expand_dims(D, axis=-1))
-    if canvas_color == 'gray':
-        canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
-    elif canvas_color == 'white':
-        canvas = tf.ones(shape=I_colors.shape, dtype=dtype)
-    elif canvas_color == 'black':
-        canvas = tf.zeros(shape=I_colors.shape, dtype=dtype)
-    elif canvas_color == 'noise':
-        canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
+    if isinstance(canvas_color,str):
+        if canvas_color == 'gray':
+            canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
+        elif canvas_color == 'white':
+            canvas = tf.ones(shape=I_colors.shape, dtype=dtype)
+        elif canvas_color == 'black':
+            canvas = tf.zeros(shape=I_colors.shape, dtype=dtype)
+        elif canvas_color == 'noise':
+            canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
+    else:
+        canvas = tf.constant(name='canvas_bg', value=canvas_color, dtype=dtype)
 
     I = I_colors * bs_mask + (1 - bs_mask) * canvas
     return I
@@ -256,6 +292,7 @@ def total_variation_loss(x_loc, s, e, K=10):
         return tf.concat([tf.square(x), tf.square(y), x * y], axis=-1) 
 
     se_vec = e - s
+    se_vec = se_vec/tf.sqrt(tf.sum(tf.square(se_vec),-1))
     se_vec_proj = projection(se_vec)
     
     x_nn_idcs = get_nn_idxs(tf.expand_dims(x_loc, axis=0), k=K)
