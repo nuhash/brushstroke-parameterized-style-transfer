@@ -171,7 +171,8 @@ class BrushstrokeOptimizer:
         steps = trange(self.num_steps, desc='', leave=True)
         for step in steps:
             self._optimize()
-            steps.set_description(f'content_loss: {self.loss_dict["content"].numpy().item():.6f}')
+            steps.set_description(f'content_loss: {self.loss_dict["content"].numpy().item():.6f},\
+                l2 loss: {self.l2loss.numpy().item():.6f}')
 
             if self.streamlit_pbar is not None: self.streamlit_pbar.update(1)
         return Image.fromarray(np.array(np.clip(self._render().numpy(), 0, 1) * 255, dtype=np.uint8))
@@ -203,6 +204,7 @@ class BrushstrokeOptimizer:
                             'curve_c': self.curve_c, 
                             'width': self.width, 
                             'color': self.color}
+        
     def render(self):
         return self._render()
     def _render(self):
@@ -290,11 +292,12 @@ class BrushstrokeOptimizer:
                 tf.image.resize(images=ops.preprocess_img(self.style_img),
                                 size=(int(self.canvas_height // 2), int(self.canvas_width // 2)),
                                 method='bilinear')
-            loss = ops.l2_loss(rendered_canvas_resized,content_img_resized,self.l2weight)
-            loss = loss+ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
-                                  self.vgg.extract_features(style_img_resized),
-                                  layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
-                                  weights=[1, 1, 1, 1, 1])*self.style_weight
+            self.l2loss = ops.l2_loss(rendered_canvas_resized,content_img_resized,1.0)
+            loss = self.l2loss*self.l2weight
+#             loss = loss+ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
+#                                   self.vgg.extract_features(style_img_resized),
+#                                   layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
+#                                   weights=[1, 1, 1, 1, 1])*self.style_weight
             return loss
         
         if self.width_fixed==False:
