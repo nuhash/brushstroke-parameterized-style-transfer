@@ -294,7 +294,7 @@ class BrushstrokeOptimizer:
             return loss
         
         varlist = [self.location, self.curve_s, self.curve_e, self.curve_c, self.color]
-        if self.fixed_width:
+        if self.width_fixed:
             varlist.append(self.width)
         tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=varlist)
         #tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
