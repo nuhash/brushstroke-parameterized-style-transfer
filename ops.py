@@ -292,7 +292,7 @@ def total_variation_loss(x_loc, s, e, K=10):
         return tf.concat([tf.square(x), tf.square(y), x * y], axis=-1) 
 
     se_vec = e - s
-    se_vec = se_vec/tf.sqrt(tf.sum(tf.square(se_vec),-1))
+    se_vec = se_vec/tf.sqrt(tf.reduce_sum(tf.square(se_vec),-1))
     se_vec_proj = projection(se_vec)
     
     x_nn_idcs = get_nn_idxs(tf.expand_dims(x_loc, axis=0), k=K)
