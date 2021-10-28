@@ -166,8 +166,7 @@ class BrushstrokeOptimizer:
         steps = trange(self.num_steps, desc='', leave=True)
         for step in steps:
             self._optimize()
-            steps.set_description(f'content_loss: {self.loss_dict["content"].numpy().item():.6f},\
-                                  style_loss: {self.loss_dict["style"].numpy().item():.6f}')
+            steps.set_description(f'content_loss: {self.loss_dict["content"].numpy().item():.6f}')
 
             if self.streamlit_pbar is not None: self.streamlit_pbar.update(1)
         return Image.fromarray(np.array(np.clip(self._render().numpy(), 0, 1) * 255, dtype=np.uint8))
