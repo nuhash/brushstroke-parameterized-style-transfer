@@ -231,6 +231,10 @@ def content_loss(features_lhs, features_rhs, layers, weights, scale_by_y=False):
     loss = tf.add_n(losses)
     return loss
 
+def l2_loss(render, image,weight):
+    loss = tf.reduce_mean(tf.square(render-image))*weight
+    return loss
+
 
 def get_gram_matrices(features):
     """
