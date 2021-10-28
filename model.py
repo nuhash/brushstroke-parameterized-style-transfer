@@ -304,17 +304,17 @@ class BrushstrokeOptimizer:
         loc_clip = tf.concat([tf.clip_by_value(loc_x, 0, self.canvas_height), tf.clip_by_value(loc_y, 0, self.canvas_width)], axis=-1)
         self.location.assign(loc_clip)
         
-        loc_sx, loc_sy = loc_x+tf.gather(self.curve_s, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_s, axis=-1, indices=[1])
-        loc_sclip = tf.concat([tf.clip_by_value(loc_sx, 0, self.canvas_height), tf.clip_by_value(loc_sy, 0, self.canvas_width)], axis=-1)
-        self.curve_s.assign(loc_sclip)
+#         loc_sx, loc_sy = loc_x+tf.gather(self.curve_s, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_s, axis=-1, indices=[1])
+#         loc_sclip = tf.concat([tf.clip_by_value(loc_sx, 0, self.canvas_height), tf.clip_by_value(loc_sy, 0, self.canvas_width)], axis=-1)
+#         self.curve_s.assign(loc_sclip)
         
-        loc_ex, loc_ey = loc_x+tf.gather(self.curve_e, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_e, axis=-1, indices=[1])
-        loc_eclip = tf.concat([tf.clip_by_value(loc_ex, 0, self.canvas_height), tf.clip_by_value(loc_ey, 0, self.canvas_width)], axis=-1)
-        self.curve_e.assign(loc_eclip)
+#         loc_ex, loc_ey = loc_x+tf.gather(self.curve_e, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_e, axis=-1, indices=[1])
+#         loc_eclip = tf.concat([tf.clip_by_value(loc_ex, 0, self.canvas_height), tf.clip_by_value(loc_ey, 0, self.canvas_width)], axis=-1)
+#         self.curve_e.assign(loc_eclip)
         
-        loc_cx, loc_cy = loc_x+tf.gather(self.curve_c, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_c, axis=-1, indices=[1])
-        loc_cclip = tf.concat([tf.clip_by_value(loc_cx, 0, self.canvas_height), tf.clip_by_value(loc_cy, 0, self.canvas_width)], axis=-1)
-        self.location.assign(loc_cclip)
+#         loc_cx, loc_cy = loc_x+tf.gather(self.curve_c, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_c, axis=-1, indices=[1])
+#         loc_cclip = tf.concat([tf.clip_by_value(loc_cx, 0, self.canvas_height), tf.clip_by_value(loc_cy, 0, self.canvas_width)], axis=-1)
+#         self.location.assign(loc_cclip)
         
         self.color.assign(tf.clip_by_value(self.color, 0, 1))
         if self.width_fixed == False:
