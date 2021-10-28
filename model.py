@@ -85,7 +85,12 @@ class BrushstrokeOptimizer:
                  draw_weight              = 100.0,         # Weight for the drawing projection loss (float)
                  curviture_weight         = 4.0,           # Weight for the curviture loss (float).
                  streamlit_pbar           = None,          # Progressbar for streamlit app (obj).
-                 dtype                    = 'float32'      # Data type (str).
+                 dtype                    = 'float32',      # Data type (str).
+                 init_prob = None,
+                 offset=0.5,
+                 init_width=None,
+                 width_fixed = False,
+                 optim_rate=0.1
                 ):
     
         #content_img = Image.open(f'/export/home/mwright/data/neural_painter/image_pairs/photos/{self.args.content_img}')
@@ -107,6 +112,13 @@ class BrushstrokeOptimizer:
         self.curviture_weight = curviture_weight
         self.streamlit_pbar = streamlit_pbar
         self.dtype = dtype
+        
+        self.init = init
+        self.init_prob = init_prob
+        self.offset = offset
+        self.init_width = init_width
+        self.width_fixed = width_fixed
+        self.optim_rate = optim_rate
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -131,6 +143,11 @@ class BrushstrokeOptimizer:
 
         self.content_img_np = content_img
         self.style_img_np = style_img
+        
+        if self.init_prob is not None:
+            self.init_prob = skimage.transform.resize(self.init_prob,(new_H,new_W,),order=3)
+        if isinstance(self.canvas_color,str) is False:
+            self.canvas_color = skimage.transform.resize(self.canvas_color,(new_H,new_W,),order=3)
 
         if draw_curve_position_path is not None and draw_curve_vector_path is not None:
             self.draw_curve_position_np = np.load(draw_curve_position_path)
@@ -228,11 +245,11 @@ class BrushstrokeOptimizer:
                                                          scale_by_y=True)
             self.loss_dict['content'] *= self.content_weight
 
-            self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
-                                                     self.vgg.extract_features(style_img_resized),
-                                                     layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
-                                                     weights=[1, 1, 1, 1, 1])
-            self.loss_dict['style'] *= self.style_weight
+#             self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
+#                                                      self.vgg.extract_features(style_img_resized),
+#                                                      layers=['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
+#                                                      weights=[1, 1, 1, 1, 1])
+#             self.loss_dict['style'] *= self.style_weight
 
             self.loss_dict['tv'] = ops.total_variation_loss(x_loc=self.location, s=self.curve_s, e=self.curve_e, K=10)
             self.loss_dict['tv'] *= self.tv_weight
@@ -274,17 +291,36 @@ class BrushstrokeOptimizer:
                                   weights=[1, 1, 1, 1, 1])
             loss *= self.style_weight
             return loss
-
-        tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=[self.location, self.curve_s, self.curve_e, self.curve_c, self.width])
-        tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
+        
+        varlist = [self.location, self.curve_s, self.curve_e, self.curve_c, self.color]
+        if self.fixed_width:
+            varlist.append(self.width)
+        tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=varlist)
+        #tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
         self._constraints()
 
     def _constraints(self):
         loc_x, loc_y = tf.gather(self.location, axis=-1, indices=[0]), tf.gather(self.location, axis=-1, indices=[1])
         loc_clip = tf.concat([tf.clip_by_value(loc_x, 0, self.canvas_height), tf.clip_by_value(loc_y, 0, self.canvas_width)], axis=-1)
         self.location.assign(loc_clip)
+        
+        loc_sx, loc_sy = loc_x+tf.gather(self.curve_s, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_s, axis=-1, indices=[1])
+        loc_sclip = tf.concat([tf.clip_by_value(loc_sx, 0, self.canvas_height), tf.clip_by_value(loc_sy, 0, self.canvas_width)], axis=-1)
+        self.curve_s.assign(loc_sclip)
+        
+        loc_ex, loc_ey = loc_x+tf.gather(self.curve_e, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_e, axis=-1, indices=[1])
+        loc_eclip = tf.concat([tf.clip_by_value(loc_ex, 0, self.canvas_height), tf.clip_by_value(loc_ey, 0, self.canvas_width)], axis=-1)
+        self.curve_e.assign(loc_eclip)
+        
+        loc_cx, loc_cy = loc_x+tf.gather(self.curve_c, axis=-1, indices=[0]), loc_y+tf.gather(self.curve_c, axis=-1, indices=[1])
+        loc_cclip = tf.concat([tf.clip_by_value(loc_cx, 0, self.canvas_height), tf.clip_by_value(loc_cy, 0, self.canvas_width)], axis=-1)
+        self.location.assign(loc_cclip)
+        
         self.color.assign(tf.clip_by_value(self.color, 0, 1))
-        self.width.assign(tf.nn.relu(self.width))
+        if self.width_fixed == False:
+            self.width.assign(tf.nn.relu(self.width))
+        else:
+            self.width.assign(tf.clip_by_value(self.width,self.init_width-0.1,self.init_width+0.1))
 
 
 class PixelOptimizer:
