@@ -160,8 +160,11 @@ class BrushstrokeOptimizer:
                                            name='vgg_weights.pickle')
         self.vgg = networks.VGG(ckpt_path=ckpt_path)
 
-    def optimize(self):
+        
+    def initialize(self):
         self._initialize()
+    def optimize(self):
+        #self._initialize()
 
         steps = trange(self.num_steps, desc='', leave=True)
         for step in steps:
@@ -187,7 +190,7 @@ class BrushstrokeOptimizer:
         self.width = tf.Variable(name='width', initial_value=width, dtype=self.dtype)
         self.content_img = tf.constant(name='content_img', value=self.content_img_np, dtype=self.dtype)
         self.style_img = tf.constant(name='style_img', value=self.style_img_np, dtype=self.dtype)
-
+        self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c, self.color]
         if hasattr(self, 'draw_curve_position_np') and hasattr(self, 'draw_curve_vector_np'):
             self.draw_curve_position = tf.constant(name='draw_curve_position', value=self.draw_curve_position_np, dtype=self.dtype)
             self.draw_curve_vector = tf.constant(name='draw_curve_vector', value=self.draw_curve_vector_np, dtype=self.dtype)
@@ -198,7 +201,8 @@ class BrushstrokeOptimizer:
                             'curve_c': self.curve_c, 
                             'width': self.width, 
                             'color': self.color}
-
+    def render(self):
+        return self._render()
     def _render(self):
         curve_points = ops.sample_quadratic_bezier_curve(s=self.curve_s + self.location,
                                                          e=self.curve_e + self.location,
@@ -292,10 +296,9 @@ class BrushstrokeOptimizer:
             loss *= self.style_weight
             return loss
         
-        varlist = [self.location, self.curve_s, self.curve_e, self.curve_c, self.color]
-        if self.width_fixed:
+        if self.width_fixed==False:
             varlist.append(self.width)
-        tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=varlist)
+        tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=self.varlist)
         #tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color])
         self._constraints()
 
