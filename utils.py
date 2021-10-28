@@ -155,7 +155,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     width_quant = np.quantile(cluster_width, q=[0.3, 0.99])
     rel_num_pixels = np.clip(rel_num_pixels, rel_num_pix_quant[0], rel_num_pix_quant[1])
     cluster_width = np.clip(cluster_width, width_quant[0], width_quant[1])
-    width = width_scale*np.ones((s.shape[0],))# * rel_num_pixels.reshape(-1, 1) * cluster_width.reshape(-1, 1)
+    width = width_scale +  cluster_width.reshape(-1, 1)*0 #* rel_num_pixels.reshape(-1, 1) * cluster_width.reshape(-1, 1)
     s, e, c = [x * sec_scale for x in [s, e, c]]
     
     location, s, e, c, width, color = [x.astype(np.float32) for x in [location, s, e, c, width, color]]
