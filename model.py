@@ -178,12 +178,21 @@ class BrushstrokeOptimizer:
         return Image.fromarray(np.array(np.clip(self._render().numpy(), 0, 1) * 255, dtype=np.uint8))
 
     def _initialize(self):
+        self.content_img = tf.constant(name='content_img', value=self.content_img_np, dtype=self.dtype)
+        if isinstance(self.canvas_color,str) is False:
+            canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=self.canvas_color, dtype=self.dtype)))
+            content_features = self.vgg.extract_features(ops.preprocess_img(self.content_img))
+            self.initloss = tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features-content_features),-1))
         location, s, e, c, width, color = utils.initialize_brushstrokes(self.content_img_np, 
                                                                         self.num_strokes, 
                                                                         self.canvas_height, 
                                                                         self.canvas_width, 
                                                                         self.length_scale, 
-                                                                        self.width_scale)
+                                                                        self.width_scale,
+                                                                        init=self.init,
+                                                                        init_prob = self.init_loss,
+                                                                        offset=self.offset,
+                                                                        init_width=self.init_width)
 
         self.curve_s = tf.Variable(name='curve_s', initial_value=s, dtype=self.dtype)
         self.curve_e = tf.Variable(name='curve_e', initial_value=e, dtype=self.dtype)
@@ -191,17 +200,14 @@ class BrushstrokeOptimizer:
         self.color = tf.Variable(name='color', initial_value=color, dtype=self.dtype)
         self.location = tf.Variable(name='location', initial_value=location, dtype=self.dtype)
         self.width = tf.Variable(name='width', initial_value=width, dtype=self.dtype)
-        self.content_img = tf.constant(name='content_img', value=self.content_img_np, dtype=self.dtype)
+        
         self.style_img = tf.constant(name='style_img', value=self.style_img_np, dtype=self.dtype)
         self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c]
         if hasattr(self, 'draw_curve_position_np') and hasattr(self, 'draw_curve_vector_np'):
             self.draw_curve_position = tf.constant(name='draw_curve_position', value=self.draw_curve_position_np, dtype=self.dtype)
             self.draw_curve_vector = tf.constant(name='draw_curve_vector', value=self.draw_curve_vector_np, dtype=self.dtype)
 
-        if isinstance(self.canvas_color,str) is False:
-            canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=self.canvas_color, dtype=self.dtype)))
-            content_features = self.vgg.extract_features(ops.preprocess_img(self.content_img))
-            self.initloss = tf.reduce_sum(tf.square(canvas_color_features-content_features),-1)
+
                                                               
                                                               
             
