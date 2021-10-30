@@ -187,7 +187,8 @@ class BrushstrokeOptimizer:
             content_features = self.vgg.extract_features(ops.preprocess_img(self.content_img))
             self.init_loss = []
             for layer in ['conv4_2', 'conv5_2']:
-                self.init_loss.append(skimage.transform.resize(tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features[layer]-content_features[layer]),-1)).numpy(),self.content_img_np.shape[:-1],order=3))
+                m = tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features[layer]-content_features[layer]),-1)).numpy()[0,...]
+                self.init_loss.append(skimage.transform.resize(m,self.content_img_np.shape[:-1],order=3))
         location, s, e, c, width, color = utils.initialize_brushstrokes(self.content_img_np, 
                                                                         self.num_strokes, 
                                                                         self.canvas_height, 
