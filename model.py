@@ -225,6 +225,8 @@ class BrushstrokeOptimizer:
         curve_points,locations,colors,widths = ops.sample_quadratic_bezier_curve2(s=self.curve_s + self.location,
                                                          e=self.curve_e + self.location,
                                                          c=self.curve_c + self.location,
+                                                         colors = self.color,
+                                                         widths = self.width,
                                                          num_points=self.S,
                                                          dtype=self.dtype)
 
