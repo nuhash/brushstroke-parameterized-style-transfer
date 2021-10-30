@@ -198,7 +198,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
     else:
         if init_prob is not None:
             sorted_vals = np.sort(init_prob.flatten())
-            norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+            norm_cdf = scipy.stats.norm.cdf(sorted_vals/np.max(sorted_vals))
             norm_cdf = norm_cdf-np.min(norm_cdf)
             norm_cdf = norm_cdf/np.max(norm_cdf)
             err_thres = sorted_vals[np.abs(norm_cdf-offset).argmin()]
