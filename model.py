@@ -13,6 +13,8 @@ import networks
 import ops
 import utils
 
+import skimage
+import skimage.transform
 
 def stylize(content_img,
             style_img,
