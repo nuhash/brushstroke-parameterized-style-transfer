@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 from skimage.segmentation import slic
 from scipy.spatial import ConvexHull
-
+import matplotlib.pyplot as plt
 
 #------------------------------------------------------------------
 # I/O
