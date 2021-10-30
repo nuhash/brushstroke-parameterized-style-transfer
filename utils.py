@@ -4,8 +4,12 @@ import os
 from PIL import Image
 import numpy as np
 from skimage.segmentation import slic
+from skimage import segmentation
 from scipy.spatial import ConvexHull
+import scipy.spatial
 import matplotlib.pyplot as plt
+import cv2
+import skimage
 
 #------------------------------------------------------------------
 # I/O
