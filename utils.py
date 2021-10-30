@@ -163,7 +163,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp'):
+def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None):
 
     if init == 'random':
         # Brushstroke colors
@@ -192,13 +192,31 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
         s, e, c = [x - sec_center for x in [s, e, c]]
         s, e, c = [x * sec_scale for x in [s, e, c]]
     else:
-        segments = slic(content_img,
-                        n_segments=num_strokes,
-                        min_size_factor=0.02,
-                        max_size_factor=4.,
-                        compactness=2,
-                        sigma=1,
-                        start_label=0)
+        if init_prob is not None:
+            sorted_vals = np.sort(init_prob.flatten())
+            norm_cdf = scipy.stats.norm.cdf(sorted_vals)
+            norm_cdf = norm_cdf-np.min(norm_cdf)
+            norm_cdf = norm_cdf/np.max(norm_cdf)
+            err_thres = sorted_vals[np.abs(norm_cdf-offset).argmin()]
+            segments = slic(content_img,
+                            n_segments=num_strokes,
+                            min_size_factor=0.02,
+                            max_size_factor=4.,
+                            compactness=2,
+                            sigma=1,
+                            start_label=0,
+                            mask=init_prob>=err_thres)
+            
+        else:
+            segments = slic(content_img,
+                            n_segments=num_strokes,
+                            min_size_factor=0.02,
+                            max_size_factor=4.,
+                            compactness=2,
+                            sigma=1,
+                            start_label=0)
+        plt.imshow(segmentation.mark_boundaries(content_img, segments))
+        plt.show()
 
         location, s, e, c, width, color = clusters_to_strokes(segments,
                                                               content_img,
