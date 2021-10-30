@@ -183,8 +183,8 @@ class BrushstrokeOptimizer:
         self.content_img = tf.constant(name='content_img', value=self.content_img_np, dtype=self.dtype)
         self.init_loss=[None]
         if isinstance(self.canvas_color,str) is False:
-            canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=self.canvas_color, dtype=self.dtype)))
-            content_features = self.vgg.extract_features(ops.preprocess_img(self.content_img))
+            canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=self.canvas_color[::2,::2,:], dtype=self.dtype)))
+            content_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="temp",value=self.content_img_np)))
             self.init_loss = []
             for layer in ['conv4_2', 'conv5_2']:
                 m = tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features[layer]-content_features[layer]),-1)).numpy()[0,...]
