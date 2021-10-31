@@ -183,11 +183,14 @@ class BrushstrokeOptimizer:
         self.content_img = tf.constant(name='content_img', value=self.content_img_np, dtype=self.dtype)
         self.init_loss=[None]
         if isinstance(self.canvas_color,str) is False:
-            canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=self.canvas_color[::2,::2,:], dtype=self.dtype)))
-            content_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="temp",value=self.content_img_np[::2,::2,:])))
-            self.init_loss = []
-            for layer in ['conv4_2', 'conv5_2']:
-                m = tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features[layer]-content_features[layer]),-1)).numpy()[0,...]
+            baseimage = self.canvas_color
+        else:
+            baseimage = 0*self.content_img_np
+        canvas_color_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="basecanvas",value=baseimage[::2,::2,:], dtype=self.dtype)))
+        content_features = self.vgg.extract_features(ops.preprocess_img(tf.constant(name="temp",value=self.content_img_np[::2,::2,:])))
+        self.init_loss = []
+        for layer in ['conv4_2', 'conv5_2']:
+            m = tf.sqrt(tf.reduce_sum(tf.square(canvas_color_features[layer]-content_features[layer]),-1)).numpy()[0,...]
                 self.init_loss.append(skimage.transform.resize(m,self.content_img_np.shape[:-1],order=3))
         location, s, e, c, width, color = utils.initialize_brushstrokes(self.content_img_np, 
                                                                         self.num_strokes, 
@@ -254,11 +257,11 @@ class BrushstrokeOptimizer:
             I = self._render()
             rendered_canvas_resized = \
                 tf.image.resize(images=ops.preprocess_img(I),
-                                size=(int(self.canvas_height), int(self.canvas_width)),
+                                size=(int(self.canvas_height//2), int(self.canvas_width//2)),
                                 method='nearest')
             content_img_resized = \
                 tf.image.resize(images=ops.preprocess_img(self.content_img),
-                                size=(int(self.canvas_height), int(self.canvas_width)),
+                                size=(int(self.canvas_height//2), int(self.canvas_width//2)),
                                 method='nearest')
             style_img_resized = \
                 tf.image.resize(images=ops.preprocess_img(self.style_img),
