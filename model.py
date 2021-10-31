@@ -203,7 +203,7 @@ class BrushstrokeOptimizer:
                                                                         init=self.init,
                                                                         init_prob = self.init_loss[-1],
                                                                         offset=self.offset,
-                                                                        init_width=self.init_width
+                                                                        init_width=self.init_width,
                                                                         sigma=self.sigma)
 
         self.curve_s = tf.Variable(name='curve_s', initial_value=s, dtype=self.dtype)
