@@ -294,19 +294,19 @@ def total_variation_loss(x_loc, s, e, K=10):
         return tf.concat([tf.square(x), tf.square(y), x * y], axis=-1) 
 
     se_vec = e - s
-    se_l = tf.sqrt(tf.reduce_sum(tf.square(se_vec),-1,keepdims=True))
-    se_vec = se_vec/se_l
+    #se_l = tf.sqrt(tf.reduce_sum(tf.square(se_vec),-1,keepdims=True))
+    se_vec = se_vec#/se_l
     se_vec_proj = projection(se_vec)
     
     x_nn_idcs = get_nn_idxs(tf.expand_dims(x_loc, axis=0), k=K)
 
     x_nn_idcs = tf.squeeze(x_nn_idcs, axis=0)
     x_sig_nns = tf.gather(se_vec, indices=x_nn_idcs, axis=0, batch_dims=0)
-    l_sig_nns = tf.gather(se_l, indices=x_nn_idcs, axis=0, batch_dims=0)
+    #l_sig_nns = tf.gather(se_l, indices=x_nn_idcs, axis=0, batch_dims=0)
     
     dist_to_centroid = tf.reduce_mean(tf.reduce_sum(tf.square(projection(x_sig_nns) - tf.expand_dims(projection(se_vec), axis=-2)), axis=-1))
-    dist_to_l_c = tf.reduce_mean(tf.reduce_sum(tf.square(projection(l_sig_nns) - tf.expand_dims(projection(se_l), axis=-2)), axis=-1))
-    return dist_to_centroid + 0.5*dist_to_l_c
+    #dist_to_l_c = tf.reduce_mean(tf.reduce_sum(tf.square(projection(l_sig_nns) - tf.expand_dims(projection(se_l), axis=-2)), axis=-1))
+    return dist_to_centroid #+ 0.5*dist_to_l_c
 
 
 def draw_projection_loss(location, s, e, draw_curve_position, draw_curve_vector, draw_strength):
