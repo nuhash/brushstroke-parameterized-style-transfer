@@ -95,7 +95,8 @@ class BrushstrokeOptimizer:
                  width_fixed = False,
                  optim_rate=0.1,
                  l2weight = 0.0,
-                 sigma=1.0
+                 sigma=1.0,
+                 layerweights = [0,0,0,1,1]
                 ):
     
         #content_img = Image.open(f'/export/home/mwright/data/neural_painter/image_pairs/photos/{self.args.content_img}')
@@ -126,6 +127,7 @@ class BrushstrokeOptimizer:
         self.optim_rate = optim_rate
         self.l2weight = l2weight
         self.sigma = sigma
+        self.layerweights = layerweights
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -277,8 +279,8 @@ class BrushstrokeOptimizer:
             self.loss_dict['content'] = ops.content_loss(rendered_features,
                                                          content_features,
                                                          #layers=['conv1_2', 'conv2_2', 'conv3_2', 'conv4_2', 'conv5_2'],
-                                                         layers=['conv4_2', 'conv5_2'],
-                                                         weights=[1, 1],
+                                                         layers=['conv1_2', 'conv2_2', 'conv3_2', 'conv4_2', 'conv5_2'],
+                                                         weights=self.layerweights,
                                                          scale_by_y=False)
             self.loss_dict['content'] *= self.content_weight
             self.lossmap = []
