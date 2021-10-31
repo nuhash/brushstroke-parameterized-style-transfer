@@ -269,13 +269,19 @@ class BrushstrokeOptimizer:
                                 method='nearest')
     
             self.loss_dict = {}
-            self.loss_dict['content'] = ops.content_loss(self.vgg.extract_features(rendered_canvas_resized),
-                                                         self.vgg.extract_features(content_img_resized),
+            rendered_features = self.vgg.extract_features(rendered_canvas_resized)
+            content_features = self.vgg.extract_features(content_img_resized)
+            self.loss_dict['content'] = ops.content_loss(rendered_features,
+                                                         content_features,
                                                          #layers=['conv1_2', 'conv2_2', 'conv3_2', 'conv4_2', 'conv5_2'],
                                                          layers=['conv4_2', 'conv5_2'],
                                                          weights=[1, 1],
                                                          scale_by_y=False)
             self.loss_dict['content'] *= self.content_weight
+            self.lossmap = []
+            for layer in ['conv4_2', 'conv5_2']:
+                m = tf.sqrt(tf.reduce_sum(tf.square(rendered_features[layer]-content_features[layer]),-1))
+                self.lossmap.append(m)
 
 #             self.loss_dict['style'] = ops.style_loss(self.vgg.extract_features(rendered_canvas_resized),
 #                                                      self.vgg.extract_features(style_img_resized),
