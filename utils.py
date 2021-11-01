@@ -207,7 +207,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             min_size_factor=0.02,
                             max_size_factor=4.,
                             compactness=2,
-                            sigma=1,
+                            sigma=sigma,
                             start_label=0,
                             mask=init_prob>=err_thres)
             
