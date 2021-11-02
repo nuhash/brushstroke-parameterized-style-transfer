@@ -167,7 +167,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None,sigma=1):
+def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None,sigma=1,sliczero=False):
 
     if init == 'random':
         # Brushstroke colors
@@ -208,6 +208,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             max_size_factor=4.,
                             compactness=2,
                             sigma=sigma,
+                            slic_zero=sliczero,
                             start_label=0,
                             mask=init_prob>=err_thres)
             
@@ -218,6 +219,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             max_size_factor=4.,
                             compactness=2,
                             sigma=sigma,
+                            slic_zero=sliczero,
                             start_label=0)
         plt.imshow(segmentation.mark_boundaries(content_img, segments))
         plt.show()
