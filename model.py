@@ -96,7 +96,8 @@ class BrushstrokeOptimizer:
                  optim_rate=0.1,
                  l2weight = 0.0,
                  sigma=1.0,
-                 layerweights = [0,0,0,1,1]
+                 layerweights = [0,0,0,1,1],
+                 sliczero=False,
                 ):
     
         #content_img = Image.open(f'/export/home/mwright/data/neural_painter/image_pairs/photos/{self.args.content_img}')
@@ -128,6 +129,7 @@ class BrushstrokeOptimizer:
         self.l2weight = l2weight
         self.sigma = sigma
         self.layerweights = layerweights
+        self.sliczero = sliczero
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -206,7 +208,8 @@ class BrushstrokeOptimizer:
                                                                         init_prob = self.init_loss[-1],
                                                                         offset=self.offset,
                                                                         init_width=self.init_width,
-                                                                        sigma=self.sigma)
+                                                                        sigma=self.sigma,
+                                                                        sliczero=self.sliczero)
 
         self.curve_s = tf.Variable(name='curve_s', initial_value=s, dtype=self.dtype)
         self.curve_e = tf.Variable(name='curve_e', initial_value=e, dtype=self.dtype)
