@@ -239,11 +239,12 @@ class BrushstrokeOptimizer:
     def render(self):
         return self._render()
     def _render(self):
-        curve_points,locations,colors,widths = ops.sample_quadratic_bezier_curve2(s=self.curve_s + self.location, #
+        curve_points,locations,colors,widths,z_orders = ops.sample_quadratic_bezier_curve2(s=self.curve_s + self.location, #
                                                          e=self.curve_e + self.location,
                                                          c=self.curve_c + self.location,
                                                          colors = self.color,
                                                          widths = self.width,
+                                                         z_orders = self.z_order,
                                                          num_points=self.S,
                                                          dtype=self.dtype)
 
@@ -261,7 +262,7 @@ class BrushstrokeOptimizer:
                          locations, 
                          colors, 
                          widths,
-                         self.z_order,
+                         z_orders,
                          self.canvas_height, 
                          self.canvas_width, 
                          self.K, 
