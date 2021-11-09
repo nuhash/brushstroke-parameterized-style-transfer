@@ -84,7 +84,7 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths,z_orders, num_points=
     locations = tf.reduce_mean(points,axis=1)
     colors = tf.repeat(colors,repeats=[num_points-1]*N,axis=0)
     widths = tf.repeat(widths,repeats=[num_points-1]*N,axis=0)
-    z_orders = tf.repeat(z_orders,repeats=[num_points-1]*N,axis=0)
+    z_orders = tf.math.exp(tf.repeat(z_orders,repeats=[num_points-1]*N,axis=0))
     return points,locations,colors,widths,z_orders
 
 def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_color='gray', dtype='float32'):
