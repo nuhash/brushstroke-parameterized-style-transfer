@@ -186,7 +186,7 @@ def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_c
     
     in_brush = tf.squeeze(tf.math.sigmoid(100000*(canvas_with_nearest_Bs_bs - tf.expand_dims(D,axis=-1))),-1)#[H, W,K]
     weighted_Z = in_brush*canvas_with_nearest_Bs_Z#[H, W,K]
-    I_NNs_B_ranking = tf.nn.softmax(1. * (weighted_Z), axis=-1)#[H, W, K]
+    I_NNs_B_ranking = tf.nn.softmax(2. * (weighted_Z), axis=-1)#[H, W, K]
     #weighted_distance = tf.reduce_sum(D*I_NNs_B_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
     #bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
