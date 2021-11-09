@@ -184,7 +184,7 @@ def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_c
     #I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, N]
     
     I_NNs_B_ranking = tf.nn.softmax(100000. * canvas_with_nearest_Bs_Z, axis=-1)#[H, W, K]
-    weighted_distance = tf.sum(D*I_NNs_b_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
+    weighted_distance = tf.reduce_sum(D*I_NNs_b_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
     bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
     bs_mask = tf.math.sigmoid(bs - weighted_distance)
