@@ -51,7 +51,7 @@ def sample_quadratic_bezier_curve(s, c, e, num_points=20, dtype='float32'):
     x = c_x + (1. - t) ** 2 * (s_x - c_x) + t ** 2 * (e_x - c_x)
     y = c_y + (1. - t) ** 2 * (s_y - c_y) + t ** 2 * (e_y - c_y)
     return tf.stack([x, y], axis=-1)
-def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype='float32'):
+def sample_quadratic_bezier_curve2(s, c, e, colors, widths,z_orders, num_points=20, dtype='float32'):
     """
     Samples points from the quadratic bezier curves defined by the control points.
     Number of points to sample is num.
@@ -84,7 +84,8 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype
     locations = tf.reduce_mean(points,axis=1)
     colors = tf.repeat(colors,repeats=[num_points-1]*N,axis=0)
     widths = tf.repeat(widths,repeats=[num_points-1]*N,axis=0)
-    return points,locations,colors,widths
+    z_orders = tf.repeat(z_orders,repeats=[num_points-1]*N,axis=0)
+    return points,locations,colors,widths,z_orders
 
 def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_color='gray', dtype='float32'):
     """                                                                                                  
