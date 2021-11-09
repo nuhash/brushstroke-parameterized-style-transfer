@@ -86,7 +86,7 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths, num_points=20, dtype
     widths = tf.repeat(widths,repeats=[num_points-1]*N,axis=0)
     return points,locations,colors,widths
 
-def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gray', dtype='float32'):
+def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_color='gray', dtype='float32'):
     """                                                                                                  
     Renders the given brushstroke parameters onto a canvas.
     See Alg. 1 in https://arxiv.org/pdf/2103.17185.pdf.                                                  
@@ -130,12 +130,21 @@ def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gra
     canvas_with_nearest_Bs_bs = tf.gather(params=widths,
                                           indices=idcs,
                                           batch_dims=0)
+    canvas_with_nearest_Bs_Z = tf.gather(params=z_order,
+                                          indices=idcs,
+                                          batch_dims=0)
     # Resize those tensors to the full canvas size (not coarse grid)
     # First locations of points sampled from curves
     H_, W_, r1, r2, r3 = canvas_with_nearest_Bs.shape.as_list()
     canvas_with_nearest_Bs = tf.reshape(canvas_with_nearest_Bs, shape=(1, H_, W_, r1 * r2 * r3)) # [1, H // 10, W // 10, K * S * 2]
     canvas_with_nearest_Bs = tf.image.resize(canvas_with_nearest_Bs, size=(H, W), method='nearest') # [1, H, W, K * S * 2]
     canvas_with_nearest_Bs = tf.reshape(canvas_with_nearest_Bs, shape=(H, W, r1, r2, r3)) # [H, W, N, S, 2]
+    
+    H_, W_, r1, r2 = canvas_with_nearest_Bs_Z.shape.as_list()
+    canvas_with_nearest_Bs_Z = tf.reshape(canvas_with_nearest_Bs_Z, shape=(1, H_, W_, r1 * r2)) # [1, H // 10, W // 10, K * S * 2]
+    canvas_with_nearest_Bs_Z = tf.image.resize(canvas_with_nearest_Bs_Z, size=(H, W), method='nearest') # [1, H, W, K * S * 2]
+    canvas_with_nearest_Bs_Z = tf.reshape(canvas_with_nearest_Bs_Z, shape=(H, W, r1)) # [H, W, K]
+    
     # Now colors of curves
     H_, W_, r1, r2 = canvas_with_nearest_Bs_colors.shape.as_list()
     canvas_with_nearest_Bs_colors = tf.reshape(canvas_with_nearest_Bs_colors, shape=(1, H_, W_, r1 * r2)) # [1, H // 10, W // 10, K * 3]
@@ -169,12 +178,16 @@ def renderer(curve_points, locations, colors, widths, H, W, K, canvas_color='gra
     dist_to_closest_point_on_line_segment = \
         tf.reduce_sum(tf.square(tf.expand_dims(tf.expand_dims(P_full, axis=2), axis=2) - closest_points_on_each_line_segment), axis=-1)
     # and distance to the nearest bezier curve.
-    D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1, -2]) # [H, W]
+    #D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1, -2]) # [H, W]
+    D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=-1) # [H, W]
     # Finally render curves on a canvas to obtain image.
-    I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, N]
+    #I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, N]
+    
+    I_NNs_B_ranking = tf.nn.softmax(100000. * canvas_with_nearest_Bs_Z, axis=-1)#[H, W, N]
+    weighted_distance = tf.einsum('hwnf,hwn->hwf', D, I_NNs_B_ranking)#[H,W,1]
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
     bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
-    bs_mask = tf.math.sigmoid(bs - tf.expand_dims(D, axis=-1))
+    bs_mask = tf.math.sigmoid(bs - weighted_distance)
     if isinstance(canvas_color,str):
         if canvas_color == 'gray':
             canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
