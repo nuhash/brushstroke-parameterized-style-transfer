@@ -220,7 +220,7 @@ class BrushstrokeOptimizer:
         self.z_order = tf.Variable(name="z_order",initial_value=np.random.uniform(0,10,(location.shape[0],)),dtype=self.dtype)
         
         self.style_img = tf.constant(name='style_img', value=self.style_img_np, dtype=self.dtype)
-        self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c,self.z_order]
+        self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c,]
         if hasattr(self, 'draw_curve_position_np') and hasattr(self, 'draw_curve_vector_np'):
             self.draw_curve_position = tf.constant(name='draw_curve_position', value=self.draw_curve_position_np, dtype=self.dtype)
             self.draw_curve_vector = tf.constant(name='draw_curve_vector', value=self.draw_curve_vector_np, dtype=self.dtype)
@@ -354,7 +354,7 @@ class BrushstrokeOptimizer:
         if self.width_fixed==False:
             varlist.append(self.width)
         tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=self.varlist)
-        tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color,self.z_order])
+        tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color,])
         self._constraints()
 
     def _constraints(self):
