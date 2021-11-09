@@ -167,8 +167,8 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     return location, s, e, c, width, color
 
 
-def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None,sigma=1,sliczero=False):
-
+def initialize_brushstrokes(content_img, stroke_density, canvas_height, canvas_width, sec_scale, width_scale, init='sp',init_prob = None,offset=0.5,init_width=None,sigma=1,sliczero=False):
+    num_strokes = canvas_height*canvas_width*stroke_density
     if init == 'random':
         # Brushstroke colors
         color = np.random.rand(num_strokes, 3)
@@ -202,6 +202,8 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
             norm_cdf = norm_cdf-np.min(norm_cdf)
             norm_cdf = norm_cdf/np.max(norm_cdf)
             err_thres = sorted_vals[np.abs(norm_cdf-offset).argmin()]
+            mask = init_prob>=err_thres
+            num_strokes = np.sum(1.0*mask)*stroke_density
             segments = slic(content_img,
                             n_segments=num_strokes,
                             min_size_factor=0.02,
@@ -210,7 +212,7 @@ def initialize_brushstrokes(content_img, num_strokes, canvas_height, canvas_widt
                             sigma=sigma,
                             slic_zero=sliczero,
                             start_label=0,
-                            mask=init_prob>=err_thres)
+                            mask=mask)
             
         else:
             segments = slic(content_img,
