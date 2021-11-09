@@ -201,8 +201,8 @@ def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_c
             canvas = tf.random.normal(shape=I_colors.shape, dtype=dtype) * 0.1
     else:
         canvas = tf.constant(name='canvas_bg', value=canvas_color, dtype=dtype)
-    print(I_colors.shape.as_list())
-    print(bs_mask.shape.as_list())
+#     print(I_colors.shape.as_list())
+#     print(bs_mask.shape.as_list())
     I = I_colors * bs_mask + (1 - bs_mask) * canvas
     return I
 
