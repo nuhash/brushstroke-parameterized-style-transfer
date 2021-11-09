@@ -106,6 +106,9 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         width = np.sum((intersec_points[0] - intersec_points[1])**2)
         
         if width == 0.0: continue
+        length = np.sqrt(np.sum((point_a-point_b)**2))
+        if length > 0.5*np.sqrt(H**2+W**2):
+            continue
 
         clusters_params['s'].append(point_a / img.shape[:2])
         clusters_params['e'].append(point_b / img.shape[:2])
