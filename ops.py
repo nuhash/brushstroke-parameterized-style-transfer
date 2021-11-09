@@ -179,18 +179,24 @@ def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_c
     dist_to_closest_point_on_line_segment = \
         tf.reduce_sum(tf.square(tf.expand_dims(tf.expand_dims(P_full, axis=2), axis=2) - closest_points_on_each_line_segment), axis=-1)
     # and distance to the nearest bezier curve.
-    #D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1, -2]) # [H, W]
-    D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=-1) # [H, W,K]
+    D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1, -2]) # [H, W]
     # Finally render curves on a canvas to obtain image.
-    #I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, K]
-    
-    in_brush = tf.squeeze(tf.math.sigmoid(100000*(canvas_with_nearest_Bs_bs - tf.expand_dims(D,axis=-1))),-1)#[H, W,K]
-    weighted_Z = in_brush*canvas_with_nearest_Bs_Z#[H, W,K]
-    I_NNs_B_ranking = tf.nn.softmax(1. * (weighted_Z), axis=-1)#[H, W, K]
-    #weighted_distance = tf.reduce_sum(D*I_NNs_B_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
+    I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, N]
     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
-    #bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
-    bs_mask = tf.math.sigmoid(1000000*(tf.reduce_sum(in_brush,axis=-1,keepdims=True)-0.5))#[H,W,1]
+    bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
+    bs_mask = tf.math.sigmoid(bs - tf.expand_dims(D, axis=-1))
+    
+#     D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=-1) # [H, W,K]
+#     # Finally render curves on a canvas to obtain image.
+#     #I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, K]
+    
+#     in_brush = tf.squeeze(tf.math.sigmoid(100000*(canvas_with_nearest_Bs_bs - tf.expand_dims(D,axis=-1))),-1)#[H, W,K]
+#     weighted_Z = in_brush*canvas_with_nearest_Bs_Z#[H, W,K]
+#     I_NNs_B_ranking = tf.nn.softmax(1. * (weighted_Z), axis=-1)#[H, W, K]
+#     #weighted_distance = tf.reduce_sum(D*I_NNs_B_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
+#     I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
+#     #bs = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_bs, I_NNs_B_ranking) # [H, W, 1]
+#     bs_mask = tf.math.sigmoid(1000000*(tf.reduce_sum(in_brush,axis=-1,keepdims=True)-0.5))#[H,W,1]
     if isinstance(canvas_color,str):
         if canvas_color == 'gray':
             canvas = tf.ones(shape=I_colors.shape, dtype=dtype) * 0.5
