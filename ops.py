@@ -140,8 +140,8 @@ def renderer(curve_points, locations, colors, widths, z_order, H, W, K, canvas_c
     canvas_with_nearest_Bs = tf.image.resize(canvas_with_nearest_Bs, size=(H, W), method='nearest') # [1, H, W, K * S * 2]
     canvas_with_nearest_Bs = tf.reshape(canvas_with_nearest_Bs, shape=(H, W, r1, r2, r3)) # [H, W, N, S, 2]
     
-    H_, W_, r1, r2 = canvas_with_nearest_Bs_Z.shape.as_list()
-    canvas_with_nearest_Bs_Z = tf.reshape(canvas_with_nearest_Bs_Z, shape=(1, H_, W_, r1 * r2)) # [1, H // 10, W // 10, K * S * 2]
+    H_, W_, r1 = canvas_with_nearest_Bs_Z.shape.as_list()
+    canvas_with_nearest_Bs_Z = tf.reshape(canvas_with_nearest_Bs_Z, shape=(1, H_, W_, r1)) # [1, H // 10, W // 10, K * S * 2]
     canvas_with_nearest_Bs_Z = tf.image.resize(canvas_with_nearest_Bs_Z, size=(H, W), method='nearest') # [1, H, W, K * S * 2]
     canvas_with_nearest_Bs_Z = tf.reshape(canvas_with_nearest_Bs_Z, shape=(H, W, r1)) # [H, W, K]
     
