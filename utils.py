@@ -73,6 +73,24 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
                        'width': [],
                        'color_rgb': []
                        }
+    img2 = np.array(img)
+    img2 = cv2.GaussianBlur(img2,(0,0),5)
+    ksize = 31
+    dx = cv2.Sobel(img2,cv2.CV_64F,1,0,ksize=ksize,scale=2**(2+1+0-ksize*2))
+    dy = cv2.Sobel(img2,cv2.CV_64F,0,1,ksize=ksize,scale=2**(2+1+0-ksize*2))
+    dm = np.sqrt(dx**2+dy**2)+0.0001
+    dxm = dx/dm
+    dym = dy/dm
+
+    dxms = -1*(dxm<0) + 1*(dxm>=0)
+    dxm = dxms*dxm
+    dym = dym*dxms
+
+    dxm = np.mean(dxm,-1)
+    dym = np.mean(dym,-1)
+    dmm = np.sqrt(dxm**2+dym**2)+0.0001
+    dxm = dxm/dmm
+    dym = dym/dmm
     
     for cluster_idx in range(num_clusters + 1):
         cluster_mask = segments==cluster_idx
@@ -111,42 +129,11 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         center_y = np.mean(cluster_mask_nonzeros[0])
         center_x = np.mean(cluster_mask_nonzeros[1])
         
-        img_lab = skimage.color.rgb2lab(img)
-        center_color = img_lab[int(center_y),int(center_x),:]
-        cluster_colors = img_lab[cluster_mask]
-        color_diffs = np.sum(np.square(cluster_colors-np.expand_dims(center_color,0)),-1)
-        diff_intensity = (1-(color_diffs/155)**2)**2
-        diff_intensity[diff_intensity<0]=0
+        dy = dym[int(center_y),int(center_x)]
+        dx = dxm[int(center_y),int(center_x)]
         
-        d1,d2 = np.where(cluster_mask)
-        m00 = 0
-        m10 = 0
-        m01 = 0
-        m20 = 0
-        m02 = 0
-        m11 = 0
-        idx = np.arange(0,d1.shape[0])
-        for p1,p2,i in zip(d1,d2,idx):
-            m00 = m00+diff_intensity[i]
-            m10 = m10+p1*diff_intensity[i]
-            m01 = m01+p2*diff_intensity[i]
-            m20 = m20+p1*p1*diff_intensity[i]
-            m02 = m02+p2*p2*diff_intensity[i]
-            m11 = m11+p1*p2*diff_intensity[i]
-
-        my = m10/m00
-        mx = m01/m00
-        
-        a = m20/m00 - my
-        b = 2*(m11/m00 - my*mx)
-        c = m02/m00 - mx
-        
-        theta = np.arctan(b/(a-c))/2
-        width = np.sqrt(6*(a+c-np.sqrt(b**2+(a-c)**2)))
-        length = np.sqrt(6*(a+c+np.sqrt(b**2+(a-c)**2)))
-        
-        point_a = np.array([center_y+np.sin(theta)*length/2,center_x+np.cos(theta)*length/2])
-        point_b = np.array([center_y-np.sin(theta)*length/2,center_x-np.cos(theta)*length/2])
+        point_a = np.array([center_y+dy*length/2,center_x+dx*length/2])
+        point_b = np.array([center_y-dy*length/2,center_x-dx*length/2])
         ##
         
         if width == 0.0: continue
