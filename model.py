@@ -267,7 +267,7 @@ class BrushstrokeOptimizer:
                          colors, 
                          widths,
                          z_orders,
-                         self.z_sorting,
+                         self.zsorting,
                          self.canvas_height, 
                          self.canvas_width, 
                          self.K, 
