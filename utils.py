@@ -125,7 +125,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         m20 = 0
         m02 = 0
         m11 = 0
-        for p1,p2 in zip((d1,d2)):
+        for p1,p2 in zip(d1,d2):
             m00 = m00+diff_intensity[p1,p2]
             m10 = m10+p1*diff_intensity[p1,p2]
             m01 = m01+p2*diff_intensity[p1,p2]
