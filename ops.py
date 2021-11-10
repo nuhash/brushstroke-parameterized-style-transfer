@@ -84,7 +84,7 @@ def sample_quadratic_bezier_curve2(s, c, e, colors, widths,z_orders, num_points=
     locations = tf.reduce_mean(points,axis=1)
     colors = tf.repeat(colors,repeats=[num_points-1]*N,axis=0)
     widths = tf.repeat(widths,repeats=[num_points-1]*N,axis=0)
-    z_orders = tf.math.exp(tf.repeat(z_orders,repeats=[num_points-1]*N,axis=0))
+    z_orders = (tf.repeat(z_orders,repeats=[num_points-1]*N,axis=0))#tf.math.exp
     return points,locations,colors,widths,z_orders
 
 def renderer(curve_points, locations, colors, widths, z_order,z_sorting, H, W, K, canvas_color='gray', dtype='float32'):
@@ -185,7 +185,9 @@ def renderer(curve_points, locations, colors, widths, z_order,z_sorting, H, W, K
         #I_NNs_B_ranking = tf.nn.softmax(100000. * (1.0 / (1e-8 + tf.reduce_min(dist_to_closest_point_on_line_segment, axis=[-1]))), axis=-1) # [H, W, K]
 
         in_brush = tf.squeeze(tf.math.sigmoid(100000*(canvas_with_nearest_Bs_bs - tf.expand_dims(D,axis=-1))),-1)#[H, W,K]
-        weighted_Z = in_brush*canvas_with_nearest_Bs_Z#[H, W,K]
+        e_z = tf.math.exp(canvas_with_nearest_Bs_Z)*in_brush
+        sum_e_z = tf.reduce_sum(e_z,-1,keepdims=True)+1e-8
+        weighted_Z = e_z/sum_e_z#[H, W,K]
         I_NNs_B_ranking = tf.nn.softmax(1. * (weighted_Z), axis=-1)#[H, W, K]
         #weighted_distance = tf.reduce_sum(D*I_NNs_B_ranking,axis=-1,keepdims=True)#tf.einsum('hwn,hwn->hw', D, I_NNs_B_ranking)#[H,W,1]
         I_colors = tf.einsum('hwnf,hwn->hwf', canvas_with_nearest_Bs_colors, I_NNs_B_ranking) # [H, W, 3]
