@@ -98,6 +98,7 @@ class BrushstrokeOptimizer:
                  sigma=1.0,
                  layerweights = [0,0,0,1,1],
                  sliczero=False,
+                 zsorting=False,
                 ):
     
         #content_img = Image.open(f'/export/home/mwright/data/neural_painter/image_pairs/photos/{self.args.content_img}')
@@ -130,6 +131,7 @@ class BrushstrokeOptimizer:
         self.sigma = sigma
         self.layerweights = layerweights
         self.sliczero = sliczero
+        self.zsorting = zsorting
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
@@ -221,6 +223,8 @@ class BrushstrokeOptimizer:
         
         self.style_img = tf.constant(name='style_img', value=self.style_img_np, dtype=self.dtype)
         self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c,]
+        if self.zsorting:
+            self.varlst.append(self.z_order)
         if hasattr(self, 'draw_curve_position_np') and hasattr(self, 'draw_curve_vector_np'):
             self.draw_curve_position = tf.constant(name='draw_curve_position', value=self.draw_curve_position_np, dtype=self.dtype)
             self.draw_curve_vector = tf.constant(name='draw_curve_vector', value=self.draw_curve_vector_np, dtype=self.dtype)
@@ -263,6 +267,7 @@ class BrushstrokeOptimizer:
                          colors, 
                          widths,
                          z_orders,
+                         z_sorting=self.z_sorting,
                          self.canvas_height, 
                          self.canvas_width, 
                          self.K, 
