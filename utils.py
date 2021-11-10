@@ -275,6 +275,7 @@ def initialize_brushstrokes(content_img, stroke_density, canvas_height, canvas_w
                             sigma=sigma,
                             slic_zero=sliczero,
                             start_label=0)
+        
         plt.imshow(segmentation.mark_boundaries(content_img, segments))
         plt.show()
 
@@ -284,5 +285,6 @@ def initialize_brushstrokes(content_img, stroke_density, canvas_height, canvas_w
                                                               canvas_width,
                                                               sec_scale=sec_scale,
                                                               width_scale=width_scale)
+        print("Requested:{}, inited:{}".format(num_strokes,location.shape[0]))
 
     return location, s, e, c, width, color
