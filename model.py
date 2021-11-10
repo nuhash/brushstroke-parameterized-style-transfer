@@ -224,7 +224,7 @@ class BrushstrokeOptimizer:
         self.style_img = tf.constant(name='style_img', value=self.style_img_np, dtype=self.dtype)
         self.varlist = [self.location, self.curve_s, self.curve_e, self.curve_c,]
         if self.zsorting:
-            self.varlst.append(self.z_order)
+            self.varlist.append(self.z_order)
         if hasattr(self, 'draw_curve_position_np') and hasattr(self, 'draw_curve_vector_np'):
             self.draw_curve_position = tf.constant(name='draw_curve_position', value=self.draw_curve_position_np, dtype=self.dtype)
             self.draw_curve_vector = tf.constant(name='draw_curve_vector', value=self.draw_curve_vector_np, dtype=self.dtype)
