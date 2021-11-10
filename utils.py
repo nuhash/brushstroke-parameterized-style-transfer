@@ -129,8 +129,8 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         center_y = np.mean(cluster_mask_nonzeros[0])
         center_x = np.mean(cluster_mask_nonzeros[1])
         
-        dy = dym[int(center_y),int(center_x)]
-        dx = dxm[int(center_y),int(center_x)]
+        dy = dxm[int(center_y),int(center_x)]
+        dx = -dym[int(center_y),int(center_x)]
         
         point_a = np.array([center_y+dy*length/2,center_x+dx*length/2])
         point_b = np.array([center_y-dy*length/2,center_x-dx*length/2])
