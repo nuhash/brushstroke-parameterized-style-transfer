@@ -143,7 +143,7 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
 
         clusters_params['s'].append(point_a / img.shape[:2])
         clusters_params['e'].append(point_b / img.shape[:2])
-        clusters_params['c'].append(np.array([my,mx]) / img.shape[:2])
+        #clusters_params['c'].append(np.array([my,mx]) / img.shape[:2])
         
         clusters_params['bp1'].append(intersec_points[0] / img.shape[:2])
         clusters_params['bp2'].append(intersec_points[1] / img.shape[:2])
@@ -177,22 +177,22 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
     s[..., 1] *= W
     e[..., 0] *= H
     e[..., 1] *= W
-    c[..., 0] *= H
-    c[..., 1] *= W
+#     c[..., 0] *= H
+#     c[..., 1] *= W
 
     s -= location
     e -= location
     
     color = clusters_params['color_rgb']
 
-#     c = (s + e) / 2. + np.stack([np.random.uniform(low=-1, high=1, size=[N]),                                                                 
-#                                  np.random.uniform(low=-1, high=1, size=[N])],             
-#                                  axis=-1)
+    c = (s + e) / 2. + np.stack([np.random.uniform(low=-3, high=3, size=[N]),                                                                 
+                                 np.random.uniform(low=-3, high=3, size=[N])],             
+                                 axis=-1)
     
-#     sec_center = (s + e + c) / 3.
-#     s -= sec_center                                                                                                          
-#     e -= sec_center                                                                                                           
-#     c -= sec_center
+    sec_center = (s + e + c) / 3.
+    s -= sec_center                                                                                                          
+    e -= sec_center                                                                                                           
+    c -= sec_center
     
     rel_num_pix_quant = np.quantile(rel_num_pixels, q=[0.3, 0.99])
     width_quant = np.quantile(cluster_width, q=[0.3, 0.99])
