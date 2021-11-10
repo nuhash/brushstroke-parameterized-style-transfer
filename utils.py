@@ -125,13 +125,14 @@ def clusters_to_strokes(segments, img, H, W, sec_scale=0.001, width_scale=1):
         m20 = 0
         m02 = 0
         m11 = 0
-        for p1,p2 in zip(d1,d2):
-            m00 = m00+diff_intensity[p1,p2]
-            m10 = m10+p1*diff_intensity[p1,p2]
-            m01 = m01+p2*diff_intensity[p1,p2]
-            m20 = m20+p1*p1*diff_intensity[p1,p2]
-            m02 = m02+p2*p2*diff_intensity[p1,p2]
-            m11 = m11+p1*p2*diff_intensity[p1,p2]
+        idx = np.arange(0,d1.shape[0])
+        for p1,p2,i in zip(d1,d2,idx):
+            m00 = m00+diff_intensity[i]
+            m10 = m10+p1*diff_intensity[i]
+            m01 = m01+p2*diff_intensity[i]
+            m20 = m20+p1*p1*diff_intensity[i]
+            m02 = m02+p2*p2*diff_intensity[i]
+            m11 = m11+p1*p2*diff_intensity[i]
 
         my = m10/m00
         mx = m01/m00
