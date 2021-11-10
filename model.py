@@ -133,7 +133,7 @@ class BrushstrokeOptimizer:
         self.layerweights = layerweights
         self.sliczero = sliczero
         self.zsorting = zsorting
-        self.zstep=zstep
+        self.zstep=z_step
 
         # Set canvas size (set smaller side of content image to 'resolution' and scale other side accordingly)
         W, H = content_img.size
