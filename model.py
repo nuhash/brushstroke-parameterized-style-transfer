@@ -359,7 +359,10 @@ class BrushstrokeOptimizer:
         if self.width_fixed==False:
             varlist.append(self.width)
         tf.keras.optimizers.Adam(learning_rate=0.1).minimize(loss, var_list=self.varlist)
-        tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color,])
+        if self.zsorting:
+            tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color,self.z_order])
+        else:
+            tf.keras.optimizers.Adam(learning_rate=0.01).minimize(style_loss, var_list=[self.color,])
         self._constraints()
 
     def _constraints(self):
