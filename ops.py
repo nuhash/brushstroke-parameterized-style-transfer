@@ -177,7 +177,7 @@ def renderer(curve_points, locations, colors, widths, z_order,z_sorting, H, W, K
     closest_points_on_each_line_segment = canvas_with_nearest_Bs_a + tf.expand_dims(t, axis=-1) * canvas_with_nearest_Bs_b_a
     # compute the distance from every pixel to the closest point on each line segment - [H, W, K, S - 1]
     dist_to_closest_point_on_line_segment = \
-        tf.reduce_sum(tf.square(tf.expand_dims(tf.expand_dims(P_full, axis=2), axis=2) - closest_points_on_each_line_segment), axis=-1)
+        tf.math.sqrt(tf.reduce_sum(tf.square(tf.expand_dims(tf.expand_dims(P_full, axis=2), axis=2) - closest_points_on_each_line_segment), axis=-1))
     # and distance to the nearest bezier curve.
     if z_sorting:
         D = tf.reduce_min(dist_to_closest_point_on_line_segment, axis=-1) # [H, W,K]
